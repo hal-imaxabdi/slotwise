@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.deps import get_current_session, get_now
+from app.deps import get_current_session, get_now, require_csrf
 from app.models import User, UserSession
 from app.schemas import AuthOut, LoginIn, UserOut
 from app.security.passwords import dummy_verify, hash_password, needs_rehash, verify_password
@@ -59,13 +59,13 @@ def me(current: tuple[UserSession, User] = Depends(get_current_session)):
 @router.post("/logout", status_code=204)
 def logout(
     response: Response,
+    _current: tuple[UserSession, User] = Depends(require_csrf),
     token: str | None = Cookie(default=None, alias=settings.session_cookie_name),
     db: Session = Depends(get_db),
     now: datetime = Depends(get_now),
 ):
-    if token:
-        revoke_session(db, token, now=now)
-        db.commit()
+    revoke_session(db, token, now=now)
+    db.commit()
     response.delete_cookie(
         key=settings.session_cookie_name,
         path="/",

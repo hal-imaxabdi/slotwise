@@ -115,16 +115,20 @@ def test_login_upgrades_weak_hash(api, db):
     db.refresh(user)
     assert user.password_hash.startswith("$argon2id$")
     assert "m=65536" in user.password_hash
- 
+
+
+
+def csrf_headers(csrf):
+    return {"X-CSRF-Token": csrf}
 
 
 def test_logout_revokes_session_server_side(api, db):
     add_user(db)
-    login(api)
+    csrf = login(api).json()["csrf_token"]
     token = api.cookies.get(settings.session_cookie_name)
     assert token
 
-    r = api.post("/auth/logout")
+    r = api.post("/auth/logout", headers=csrf_headers(csrf))
     assert r.status_code == 204
 
     # Replay the old cookie by hand: the server must reject it.
@@ -135,16 +139,38 @@ def test_logout_revokes_session_server_side(api, db):
 
 def test_logout_clears_cookie(api, db):
     add_user(db)
-    login(api)
-    header = api.post("/auth/logout").headers["set-cookie"].lower()
+    csrf = login(api).json()["csrf_token"]
+    header = api.post("/auth/logout", headers=csrf_headers(csrf)).headers["set-cookie"].lower()
     assert settings.session_cookie_name in header
     assert "max-age=0" in header
 
 
-def test_logout_without_cookie_is_204(api):
-    assert api.post("/auth/logout").status_code == 204
+def test_logout_without_csrf_header_is_403_and_keeps_session(api, db):
+    add_user(db)
+    login(api)
+    assert api.post("/auth/logout").status_code == 403
+    assert api.get("/auth/me").status_code == 200
 
 
-def test_logout_with_forged_cookie_is_204(api):
+def test_logout_with_wrong_csrf_header_is_403(api, db):
+    add_user(db)
+    login(api)
+    r = api.post("/auth/logout", headers=csrf_headers("x" * 43))
+    assert r.status_code == 403
+    assert r.json() == {"detail": "CSRF token missing or invalid"}
+
+
+def test_logout_without_session_is_401(api):
+    assert api.post("/auth/logout", headers=csrf_headers("x" * 43)).status_code == 401
+
+
+def test_logout_with_forged_cookie_is_401(api):
     api.cookies.set(settings.session_cookie_name, "forged-token")
-    assert api.post("/auth/logout").status_code == 204
+    assert api.post("/auth/logout", headers=csrf_headers("x" * 43)).status_code == 401
+
+
+def test_csrf_token_from_another_session_is_rejected(api, db):
+    add_user(db)
+    old_csrf = login(api).json()["csrf_token"]
+    login(api)  # new session replaces the cookie; the old CSRF token no longer matches
+    assert api.post("/auth/logout", headers=csrf_headers(old_csrf)).status_code == 403

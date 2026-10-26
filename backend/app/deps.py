@@ -1,6 +1,7 @@
+import secrets
 from datetime import UTC, datetime
 
-from fastapi import Cookie, Depends, HTTPException
+from fastapi import Cookie, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -24,3 +25,14 @@ def get_current_session(
     if found is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return found
+
+def require_csrf(
+    current: tuple[UserSession, User] = Depends(get_current_session),
+    x_csrf_token: str | None = Header(default=None),
+) -> tuple[UserSession, User]:
+    session, _user = current
+    if not x_csrf_token or not secrets.compare_digest(
+        x_csrf_token.encode("utf-8"), session.csrf_token.encode("utf-8")
+    ):
+        raise HTTPException(status_code=403, detail="CSRF token missing or invalid")
+    return current
