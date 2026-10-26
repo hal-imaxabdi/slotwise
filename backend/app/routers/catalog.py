@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from app.deps import get_now
 
 from app.availability import BUSINESS_TZ, ServiceNotFound, get_free_slots
 from app.database import get_db
@@ -13,8 +14,7 @@ from app.schemas import ServiceOut, SlotOut, SlotsOut
 router = APIRouter(tags=["catalog"])
 
 MAX_DAYS_AHEAD = 90
-def get_now() -> datetime:
-    return datetime.now(timezone.utc)
+
 
 
 @router.get("/services", response_model=list[ServiceOut])
