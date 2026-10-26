@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -10,7 +10,7 @@ from app.deps import get_current_session, get_now
 from app.models import User, UserSession
 from app.schemas import AuthOut, LoginIn, UserOut
 from app.security.passwords import dummy_verify, hash_password, needs_rehash, verify_password
-from app.sessions import create_session
+from app.sessions import create_session, revoke_session
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -55,3 +55,21 @@ def login(
 def me(current: tuple[UserSession, User] = Depends(get_current_session)):
     session, user = current
     return AuthOut(user=UserOut.model_validate(user), csrf_token=session.csrf_token)
+
+@router.post("/logout", status_code=204)
+def logout(
+    response: Response,
+    token: str | None = Cookie(default=None, alias=settings.session_cookie_name),
+    db: Session = Depends(get_db),
+    now: datetime = Depends(get_now),
+):
+    if token:
+        revoke_session(db, token, now=now)
+        db.commit()
+    response.delete_cookie(
+        key=settings.session_cookie_name,
+        path="/",
+        httponly=True,
+        secure=settings.cookie_secure,
+        samesite=settings.cookie_samesite,
+    )

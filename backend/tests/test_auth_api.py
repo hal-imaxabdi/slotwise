@@ -115,4 +115,36 @@ def test_login_upgrades_weak_hash(api, db):
     db.refresh(user)
     assert user.password_hash.startswith("$argon2id$")
     assert "m=65536" in user.password_hash
-    
+ 
+
+
+def test_logout_revokes_session_server_side(api, db):
+    add_user(db)
+    login(api)
+    token = api.cookies.get(settings.session_cookie_name)
+    assert token
+
+    r = api.post("/auth/logout")
+    assert r.status_code == 204
+
+    # Replay the old cookie by hand: the server must reject it.
+    api.cookies.clear()
+    api.cookies.set(settings.session_cookie_name, token)
+    assert api.get("/auth/me").status_code == 401
+
+
+def test_logout_clears_cookie(api, db):
+    add_user(db)
+    login(api)
+    header = api.post("/auth/logout").headers["set-cookie"].lower()
+    assert settings.session_cookie_name in header
+    assert "max-age=0" in header
+
+
+def test_logout_without_cookie_is_204(api):
+    assert api.post("/auth/logout").status_code == 204
+
+
+def test_logout_with_forged_cookie_is_204(api):
+    api.cookies.set(settings.session_cookie_name, "forged-token")
+    assert api.post("/auth/logout").status_code == 204
