@@ -5,7 +5,7 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import settings  # adjust if your names differ
 
@@ -59,4 +59,27 @@ def db(engine):
         conn.execute(
             text("TRUNCATE appointments, unavailable_periods, business_hours, services, users CASCADE")
         )
+
+@pytest.fixture()
+def client(engine, db):
+    """TestClient whose requests use the isolated test database.
+    Depends on `db` so the TRUNCATE cleanup still runs after each test."""
+    from fastapi.testclient import TestClient
+
+    from app.database import get_db
+    from app.main import app
+
+    factory = sessionmaker(bind=engine, expire_on_commit=False)
+
+    def override_get_db():
+        session = factory()
+        try:
+            yield session
+        finally:
+            session.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as c:
+        yield c
+    app.dependency_overrides.clear()
         
