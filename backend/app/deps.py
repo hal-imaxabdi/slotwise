@@ -9,6 +9,10 @@ from app.database import get_db
 from app.models import User, UserSession
 from app.sessions import get_valid_session
 
+from collections.abc import Callable
+
+from app.models import Role
+
 
 def get_now() -> datetime:
     return datetime.now(UTC)
@@ -36,3 +40,25 @@ def require_csrf(
     ):
         raise HTTPException(status_code=403, detail="CSRF token missing or invalid")
     return current
+
+def _role_checker(
+    base: Callable[..., tuple[UserSession, User]], allowed: frozenset[str]
+) -> Callable[..., tuple[UserSession, User]]:
+    def checker(current: tuple[UserSession, User] = Depends(base)) -> tuple[UserSession, User]:
+        if current[1].role not in allowed:
+            raise HTTPException(status_code=403, detail="Forbidden")
+        return current
+
+    return checker
+
+
+STAFF_ROLES = frozenset({Role.STAFF.value, Role.ADMIN.value})
+ADMIN_ROLES = frozenset({Role.ADMIN.value})
+
+# Reads (GET): session + role.
+require_staff = _role_checker(get_current_session, STAFF_ROLES)
+require_admin = _role_checker(get_current_session, ADMIN_ROLES)
+
+# Writes (POST/PUT/PATCH/DELETE): session + CSRF + role.
+require_staff_write = _role_checker(require_csrf, STAFF_ROLES)
+require_admin_write = _role_checker(require_csrf, ADMIN_ROLES)
