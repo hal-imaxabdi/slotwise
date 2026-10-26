@@ -3,7 +3,9 @@
 Run from backend/ with the venv active:  python -m scripts.seed
 Seeded users get an unusable password marker; the auth milestone sets real hashes.
 """
+import os
 
+from app.security.passwords import hash_password, verify_password
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
@@ -16,7 +18,29 @@ from app.slots import local_minute_to_utc
 
 JAKARTA = ZoneInfo("Asia/Jakarta")
 UNUSABLE_PASSWORD = "!unusable-until-auth-milestone"
+DEMO_CUSTOMER_PASSWORD = "demo-customer-2026"  # public on purpose: fictional demo account
+MIN_PRIVILEGED_PASSWORD_LENGTH = 12
 
+
+def default_passwords() -> dict[str, str]:
+    """Role -> password. Staff/admin only get one if set in the environment."""
+    passwords = {"customer": DEMO_CUSTOMER_PASSWORD}
+    for role, var in (("staff", "SEED_STAFF_PASSWORD"), ("admin", "SEED_ADMIN_PASSWORD")):
+        value = os.environ.get(var)
+        if value:
+            if len(value) < MIN_PRIVILEGED_PASSWORD_LENGTH:
+                raise SystemExit(f"{var} must be at least {MIN_PRIVILEGED_PASSWORD_LENGTH} characters")
+            passwords[role] = value
+    return passwords
+
+
+def ensure_password(user: User, password: str | None) -> None:
+    """Set a real hash only if the stored one is the marker or doesn't verify."""
+    if password is None:
+        return
+    if user.password_hash == UNUSABLE_PASSWORD or not verify_password(password, user.password_hash):
+        user.password_hash = hash_password(password)
+        print(f"password: set for {user.email}")
 SERVICES = [
     ("Classic Haircut", "Wash, cut and style.", 30, 75_000),
     ("Haircut and Beard Trim", "Full haircut plus beard shaping.", 60, 120_000),
@@ -72,8 +96,11 @@ def at(day: date, hour: int, minute: int = 0) -> datetime:
     return local_minute_to_utc(day, hour * 60 + minute, JAKARTA)
 
 
-def seed(db: Session) -> None:
+def seed(db: Session, passwords: dict[str, str] | None = None) -> None:
+    passwords = default_passwords() if passwords is None else passwords
     users = {role: get_or_create_user(db, e, n, role) for e, n, role in USERS}
+    for role, user in users.items():
+        ensure_password(user, passwords.get(role))
     services = {s[0]: get_or_create_service(db, *s) for s in SERVICES}
 
     if is_empty(db, BusinessHour):
@@ -83,7 +110,6 @@ def seed(db: Session) -> None:
         print("business hours: seeded")
     else:
         print("business hours: already present")
-
     now = datetime.now(timezone.utc)
     today = now.astimezone(JAKARTA).date()
     tuesday = next_tuesday_at_least_two_days_ahead(today)
