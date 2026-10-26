@@ -22,7 +22,13 @@ def get_free_slots(
     service_id: uuid.UUID,
     day: date,
     now: datetime | None = None,
+    exclude_appointment_id: uuid.UUID | None = None,
 ) -> list[datetime]:
+    """Free start times for `service_id` on local date `day`.
+
+    `exclude_appointment_id` lets a reschedule ignore the appointment being moved,
+    so its own current slot does not count as busy.
+    """
     service = db.get(Service, service_id)
     if service is None or not service.is_active:
         raise ServiceNotFound(str(service_id))
@@ -45,16 +51,15 @@ def get_free_slots(
             )
         )
     ]
-    blocked += [
-        Window(a.starts_at, a.ends_at)
-        for a in db.scalars(
-            select(Appointment).where(
-                Appointment.status != "cancelled",
-                Appointment.starts_at < day_end,
-                Appointment.ends_at > day_start,
-            )
-        )
-    ]
+
+    appointment_query = select(Appointment).where(
+        Appointment.status != "cancelled",
+        Appointment.starts_at < day_end,
+        Appointment.ends_at > day_start,
+    )
+    if exclude_appointment_id is not None:
+        appointment_query = appointment_query.where(Appointment.id != exclude_appointment_id)
+    blocked += [Window(a.starts_at, a.ends_at) for a in db.scalars(appointment_query)]
 
     return compute_free_starts(
         day=day,
