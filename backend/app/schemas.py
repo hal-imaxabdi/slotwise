@@ -1,6 +1,8 @@
 import uuid
 from datetime import date, datetime
-from pydantic import BaseModel, ConfigDict, Field
+
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+
 
 class LoginIn(BaseModel):
     email: str = Field(min_length=1, max_length=254)
@@ -20,6 +22,7 @@ class AuthOut(BaseModel):
     user: UserOut
     csrf_token: str
 
+
 class ServiceOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -32,7 +35,7 @@ class ServiceOut(BaseModel):
 
 class SlotOut(BaseModel):
     starts_at: datetime  # UTC
-    local_time: str      # "HH:MM" in the business time zone
+    local_time: str  # "HH:MM" in the business time zone
 
 
 class SlotsOut(BaseModel):
@@ -41,4 +44,30 @@ class SlotsOut(BaseModel):
     timezone: str
     duration_minutes: int
     slots: list[SlotOut]
+
+
+class AppointmentCreateIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    service_id: uuid.UUID
+    starts_at: AwareDatetime
+    notes: str = Field(default="", max_length=500)
+
+
+class AppointmentRescheduleIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    starts_at: AwareDatetime
+
+
+class AppointmentOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    service_id: uuid.UUID
+    starts_at: datetime  # UTC
+    ends_at: datetime  # UTC
+    status: str
+    notes: str
+    cancelled_at: datetime | None
     
