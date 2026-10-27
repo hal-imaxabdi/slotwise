@@ -1,25 +1,16 @@
-import { useEffect, useState } from 'react'
-
-type Status = 'checking' | 'ok' | 'down'
+import { Navigate, Route, Routes } from 'react-router';
+import { RequireAuth } from './auth/RequireAuth.tsx';
+import { HomePage } from './pages/HomePage.tsx';
+import { LoginPage } from './pages/LoginPage.tsx';
 
 export default function App() {
-  const [status, setStatus] = useState<Status>('checking')
-
-  useEffect(() => {
-    const controller = new AbortController()
-    fetch('/api/health', { signal: controller.signal })
-      .then((res) => setStatus(res.ok ? 'ok' : 'down'))
-      .catch((err: unknown) => {
-        if (err instanceof DOMException && err.name === 'AbortError') return
-        setStatus('down')
-      })
-    return () => controller.abort()
-  }, [])
-
   return (
-    <main>
-      <h1>Slotwise</h1>
-      <p>{`API: ${status}`}</p>
-    </main>
-  )
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<RequireAuth />}>
+        <Route index element={<HomePage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
