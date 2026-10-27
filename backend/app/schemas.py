@@ -70,4 +70,18 @@ class AppointmentOut(BaseModel):
     status: str
     notes: str
     cancelled_at: datetime | None
+
+
+class StaffAppointmentCreateIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    customer_id: uuid.UUID
+    service_id: uuid.UUID
+    starts_at: AwareDatetime
+    notes: str = Field(default="", max_length=500)
+
+
+class StaffAppointmentOut(AppointmentOut):
+    customer_id: uuid.UUID
+    created_by_id: uuid.UUID
     

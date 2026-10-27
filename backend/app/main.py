@@ -4,12 +4,13 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.routers import appointments, auth, catalog
+from app.routers import appointments, auth, catalog, staff
 
 app = FastAPI(title="Slotwise API")
 app.include_router(catalog.router)
 app.include_router(auth.router)
 app.include_router(appointments.router)
+app.include_router(staff.router)
 
 
 @app.get("/health")
