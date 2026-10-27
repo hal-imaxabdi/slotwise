@@ -153,4 +153,30 @@ class AdminServiceUpdateIn(BaseModel):
 
 class AdminServiceOut(ServiceOut):
     is_active: bool
+
+
+# Admin business hours. The real limits (grid, overlap, 8 per day) live in
+# app/admin_hours.py; max_length here only bounds the request size.
+
+
+class BusinessIntervalIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    open_minute: StrictInt
+    close_minute: StrictInt
+
+
+class BusinessHoursReplaceIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    intervals: list[BusinessIntervalIn] = Field(max_length=20)
+
+
+class BusinessHourOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    weekday: int
+    open_minute: int
+    close_minute: int
     
