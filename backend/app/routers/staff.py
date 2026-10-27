@@ -2,6 +2,7 @@
 
 Service functions only flush; this module commits.
 """
+
 import uuid
 from datetime import date, datetime, time, timedelta, timezone
 
@@ -11,10 +12,15 @@ from sqlalchemy.orm import Session
 
 from app.availability import BUSINESS_TZ, ServiceNotFound
 from app.booking import (
+    AppointmentNotActive,
+    AppointmentNotFound,
+    AppointmentNotStarted,
+    BookingForbidden,
     CustomerNotFound,
     SlotNotBookable,
     SlotTaken,
     create_appointment,
+    mark_appointment,
 )
 from app.database import get_db
 from app.deps import get_now, require_staff, require_staff_write
@@ -112,3 +118,48 @@ def create_for_customer(
         raise HTTPException(status_code=422, detail="That time is not bookable")
     db.commit()
     return appointment
+
+
+def _mark(
+    db: Session,
+    user: User,
+    appointment_id: uuid.UUID,
+    status: AppointmentStatus,
+    now: datetime,
+) -> Appointment:
+    try:
+        appointment = mark_appointment(
+            db, user=user, appointment_id=appointment_id, status=status, now=now
+        )
+    except BookingForbidden:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    except AppointmentNotFound:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    except AppointmentNotActive:
+        raise HTTPException(status_code=409, detail="Appointment can no longer be changed")
+    except AppointmentNotStarted:
+        raise HTTPException(status_code=409, detail="Appointment has not started yet")
+    db.commit()
+    return appointment
+
+
+@router.post("/appointments/{appointment_id}/complete", response_model=StaffAppointmentOut)
+def complete(
+    appointment_id: uuid.UUID,
+    current: tuple[UserSession, User] = Depends(require_staff_write),
+    db: Session = Depends(get_db),
+    now: datetime = Depends(get_now),
+):
+    _session, user = current
+    return _mark(db, user, appointment_id, AppointmentStatus.COMPLETED, now)
+
+
+@router.post("/appointments/{appointment_id}/no-show", response_model=StaffAppointmentOut)
+def no_show(
+    appointment_id: uuid.UUID,
+    current: tuple[UserSession, User] = Depends(require_staff_write),
+    db: Session = Depends(get_db),
+    now: datetime = Depends(get_now),
+):
+    _session, user = current
+    return _mark(db, user, appointment_id, AppointmentStatus.NO_SHOW, now)

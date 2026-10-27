@@ -18,6 +18,7 @@ EXCLUSION_VIOLATION = "23P01"
 STAFF_ROLES = {"staff", "admin"}
 CUSTOMER_ROLE = "customer"
 CUSTOMER_CHANGE_WINDOW = timedelta(hours=24)
+MARKABLE_STATUSES = {AppointmentStatus.COMPLETED, AppointmentStatus.NO_SHOW}
 
 
 class BookingError(Exception):
@@ -45,11 +46,15 @@ class AppointmentNotActive(BookingError):
 
 
 class BookingForbidden(BookingError):
-    """A non-staff user tried to book for someone else (maps to 403)."""
+    """A non-staff user tried a staff-only action (maps to 403)."""
 
 
 class CustomerNotFound(BookingError):
     """Unknown, inactive, or non-customer account as booking target (maps to 404)."""
+
+
+class AppointmentNotStarted(BookingError):
+    """An appointment that has not started yet cannot be completed or no-show (maps to 409)."""
 
 
 def _sqlstate(exc: IntegrityError) -> str | None:
@@ -239,4 +244,36 @@ def reschedule_appointment(
         if _sqlstate(exc) == EXCLUSION_VIOLATION:
             raise SlotTaken() from exc
         raise
+    return appointment
+
+
+def mark_appointment(
+    db: Session,
+    *,
+    user: User,
+    appointment_id: uuid.UUID,
+    status: AppointmentStatus,
+    now: datetime,
+) -> Appointment:
+    """Mark a booked appointment as completed or no_show (staff/admin only).
+
+    Raises BookingForbidden, AppointmentNotFound, AppointmentNotActive,
+    AppointmentNotStarted. Marking with the status it already has returns it unchanged.
+    """
+    if status not in MARKABLE_STATUSES:
+        raise ValueError(f"cannot mark an appointment as {status!r}")
+    if user.role not in STAFF_ROLES:
+        raise BookingForbidden()
+
+    appointment = _load_for_update(db, user, appointment_id)
+
+    if appointment.status == status.value:
+        return appointment
+    if appointment.status != AppointmentStatus.BOOKED:
+        raise AppointmentNotActive()
+    if appointment.starts_at > now:
+        raise AppointmentNotStarted()
+
+    appointment.status = status.value
+    db.flush()
     return appointment
