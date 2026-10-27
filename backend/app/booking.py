@@ -16,6 +16,7 @@ from app.models.appointment import AppointmentStatus
 
 EXCLUSION_VIOLATION = "23P01"
 STAFF_ROLES = {"staff", "admin"}
+CUSTOMER_ROLE = "customer"
 CUSTOMER_CHANGE_WINDOW = timedelta(hours=24)
 
 
@@ -41,6 +42,14 @@ class ChangeWindowClosed(BookingError):
 
 class AppointmentNotActive(BookingError):
     """Only booked appointments can be changed (maps to 409)."""
+
+
+class BookingForbidden(BookingError):
+    """A non-staff user tried to book for someone else (maps to 403)."""
+
+
+class CustomerNotFound(BookingError):
+    """Unknown, inactive, or non-customer account as booking target (maps to 404)."""
 
 
 def _sqlstate(exc: IntegrityError) -> str | None:
@@ -84,6 +93,25 @@ def _check_change_window(user: User, appointment: Appointment, now: datetime) ->
         raise ChangeWindowClosed()
 
 
+def _resolve_customer(
+    db: Session, user: User, customer_id: uuid.UUID | None
+) -> User:
+    """Return the customer an appointment is booked for.
+
+    No customer_id (or the caller's own id) means the caller books for themselves.
+    Booking for someone else requires staff/admin, and the target must be an
+    active customer account.
+    """
+    if customer_id is None or customer_id == user.id:
+        return user
+    if user.role not in STAFF_ROLES:
+        raise BookingForbidden()
+    customer = db.get(User, customer_id)
+    if customer is None or not customer.is_active or customer.role != CUSTOMER_ROLE:
+        raise CustomerNotFound()
+    return customer
+
+
 def create_appointment(
     db: Session,
     *,
@@ -92,11 +120,16 @@ def create_appointment(
     starts_at: datetime,
     notes: str,
     now: datetime,
+    customer_id: uuid.UUID | None = None,
 ) -> Appointment:
-    """Book `service_id` at `starts_at` for `user`.
+    """Book `service_id` at `starts_at`, for `user` or (staff only) for `customer_id`.
 
-    Raises ServiceNotFound (unknown or inactive service), SlotTaken, SlotNotBookable.
+    created_by_id is always the acting user.
+    Raises BookingForbidden, CustomerNotFound, ServiceNotFound (unknown or
+    inactive service), SlotTaken, SlotNotBookable.
     """
+    customer = _resolve_customer(db, user, customer_id)
+
     starts_at = starts_at.astimezone(timezone.utc)
     local_day = starts_at.astimezone(BUSINESS_TZ).date()
 
@@ -111,7 +144,7 @@ def create_appointment(
         raise SlotNotBookable()
 
     appointment = Appointment(
-        customer_id=user.id,
+        customer_id=customer.id,
         service_id=service.id,
         starts_at=starts_at,
         ends_at=ends_at,
