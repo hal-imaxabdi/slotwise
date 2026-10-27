@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { listServices, logout, me } from './api/endpoints.ts';
+import { getSlots, listServices, logout, me } from './api/endpoints.ts';
 import { UnauthorizedError } from './api/errors.ts';
 import type { Service } from './api/types.ts';
 import App from './App.tsx';
@@ -59,6 +59,21 @@ describe('App routing', () => {
     expect(await screen.findByRole('heading', { name: 'Services', level: 1 })).toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Classic Haircut' })).toBeInTheDocument();
     expect(screen.getByText('Demo Customer')).toBeInTheDocument();
+  });
+
+  it('shows the booking page for a signed-in user', async () => {
+    vi.mocked(me).mockResolvedValue(AUTH);
+    vi.mocked(listServices).mockResolvedValue(SERVICES);
+    vi.mocked(getSlots).mockResolvedValue({
+      service_id: 's1',
+      date: '2026-10-27',
+      timezone: 'Asia/Jakarta',
+      duration_minutes: 30,
+      slots: [],
+    });
+    renderApp('/services/s1/book');
+    expect(await screen.findByRole('heading', { name: 'Book Classic Haircut' })).toBeInTheDocument();
+    expect(await screen.findByText('No times are available on this date.')).toBeInTheDocument();
   });
 
   it('redirects unknown paths to the services page', async () => {
