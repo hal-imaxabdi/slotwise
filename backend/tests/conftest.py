@@ -57,7 +57,7 @@ def db(engine):
         session.rollback()
     with engine.begin() as conn:
         conn.execute(
-                        text("TRUNCATE user_sessions, appointments, unavailable_periods, business_hours, services, users CASCADE")
+                        text("TRUNCATE user_sessions, appointments, unavailable_periods, business_hours, services, users, login_throttle CASCADE")
         )
 
 @pytest.fixture()
