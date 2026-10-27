@@ -1,4 +1,5 @@
 import secrets
+from collections.abc import Callable
 from datetime import UTC, datetime
 
 from fastapi import Cookie, Depends, Header, HTTPException
@@ -6,12 +7,8 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.models import User, UserSession
+from app.models import Role, User, UserSession
 from app.sessions import get_valid_session
-
-from collections.abc import Callable
-
-from app.models import Role
 
 
 def get_now() -> datetime:
@@ -30,6 +27,7 @@ def get_current_session(
         raise HTTPException(status_code=401, detail="Not authenticated")
     return found
 
+
 def require_csrf(
     current: tuple[UserSession, User] = Depends(get_current_session),
     x_csrf_token: str | None = Header(default=None),
@@ -40,6 +38,7 @@ def require_csrf(
     ):
         raise HTTPException(status_code=403, detail="CSRF token missing or invalid")
     return current
+
 
 def _role_checker(
     base: Callable[..., tuple[UserSession, User]], allowed: frozenset[str]
