@@ -84,4 +84,9 @@ class StaffAppointmentCreateIn(BaseModel):
 class StaffAppointmentOut(AppointmentOut):
     customer_id: uuid.UUID
     created_by_id: uuid.UUID
+
+
+class StaffAppointmentListItem(StaffAppointmentOut):
+    customer_email: str
+    customer_name: str
     
