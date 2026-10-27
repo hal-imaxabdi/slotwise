@@ -79,3 +79,24 @@ def revoke_all_for_user(db: Session, user_id: uuid.UUID, now: datetime | None = 
     )
     db.flush()
     return result.rowcount
+
+
+def revoke_others_for_user(
+    db: Session,
+    user_id: uuid.UUID,
+    keep_session_id: uuid.UUID,
+    now: datetime | None = None,
+) -> int:
+    """Revoke every live session of the user except the one in use."""
+    now = now or datetime.now(UTC)
+    result = db.execute(
+        update(UserSession)
+        .where(
+            UserSession.user_id == user_id,
+            UserSession.id != keep_session_id,
+            UserSession.revoked_at.is_(None),
+        )
+        .values(revoked_at=now)
+    )
+    db.flush()
+    return result.rowcount
