@@ -8,6 +8,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 
+def normalize_origin(value: str) -> str:
+    return value.strip().rstrip("/").lower()
+
+
 class Settings(BaseSettings):
     database_url: str
 
@@ -20,7 +24,15 @@ class Settings(BaseSettings):
     cookie_secure: bool = False  # MUST be true in production (HTTPS only)
     cookie_samesite: str = "lax"
 
+    # Browser origins allowed to make state-changing requests (comma-separated).
+    allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+
     model_config = SettingsConfigDict(env_file=ENV_FILE, extra="ignore")
+
+    @property
+    def allowed_origins_list(self) -> list[str]:
+        parts = (normalize_origin(p) for p in self.allowed_origins.split(","))
+        return [p for p in parts if p]
 
     @model_validator(mode="after")
     def _refuse_insecure_production(self) -> "Settings":

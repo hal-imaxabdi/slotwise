@@ -4,6 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.origin import OriginCheckMiddleware
 from app.routers import (
     admin_hours,
     admin_services,
@@ -15,6 +16,7 @@ from app.routers import (
 )
 
 app = FastAPI(title="Slotwise API")
+app.add_middleware(OriginCheckMiddleware)
 app.include_router(catalog.router)
 app.include_router(auth.router)
 app.include_router(appointments.router)
