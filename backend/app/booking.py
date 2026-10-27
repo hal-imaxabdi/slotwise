@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.availability import BUSINESS_TZ, get_free_slots
+from app.dbutil import sqlstate
 from app.models import Appointment, Service, User
 from app.models.appointment import AppointmentStatus
 
@@ -55,11 +56,6 @@ class CustomerNotFound(BookingError):
 
 class AppointmentNotStarted(BookingError):
     """An appointment that has not started yet cannot be completed or no-show (maps to 409)."""
-
-
-def _sqlstate(exc: IntegrityError) -> str | None:
-    orig = exc.orig
-    return getattr(orig, "sqlstate", None) or getattr(orig, "pgcode", None)
 
 
 def _overlaps_active_appointment(
@@ -161,7 +157,7 @@ def create_appointment(
             db.add(appointment)
             db.flush()
     except IntegrityError as exc:
-        if _sqlstate(exc) == EXCLUSION_VIOLATION:
+        if sqlstate(exc) == EXCLUSION_VIOLATION:
             raise SlotTaken() from exc
         raise
     return appointment
@@ -241,7 +237,7 @@ def reschedule_appointment(
             appointment.ends_at = ends_at
             db.flush()
     except IntegrityError as exc:
-        if _sqlstate(exc) == EXCLUSION_VIOLATION:
+        if sqlstate(exc) == EXCLUSION_VIOLATION:
             raise SlotTaken() from exc
         raise
     return appointment

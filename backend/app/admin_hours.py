@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.availability import BUSINESS_TZ
 from app.booking import BookingError, BookingForbidden
+from app.dbutil import sqlstate
 from app.models import Appointment, AppointmentStatus, BusinessHour, Role, User
 
 GRID_MINUTES = 30
@@ -32,11 +33,6 @@ class HoursConflictWithAppointments(BookingError):
     def __init__(self, count: int) -> None:
         super().__init__(count)
         self.count = count
-
-
-def _sqlstate(exc: IntegrityError) -> str | None:
-    orig = exc.orig
-    return getattr(orig, "sqlstate", None) or getattr(orig, "pgcode", None)
 
 
 def _require_admin(user: User) -> None:
@@ -153,7 +149,7 @@ def replace_day(
             db.add_all(rows)
             db.flush()
     except IntegrityError as exc:
-        if _sqlstate(exc) == EXCLUSION_VIOLATION:
+        if sqlstate(exc) == EXCLUSION_VIOLATION:
             raise InvalidHours("business hours changed concurrently; reload and retry") from exc
         raise
     return rows

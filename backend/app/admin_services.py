@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.booking import BookingError, BookingForbidden
+from app.dbutil import sqlstate
 from app.models import Role, Service, User
 
 UNIQUE_VIOLATION = "23505"
@@ -36,13 +37,8 @@ class UnknownService(BookingError):
     """No service with this id, active or not (maps to 404)."""
 
 
-def _sqlstate(exc: IntegrityError) -> str | None:
-    orig = exc.orig
-    return getattr(orig, "sqlstate", None) or getattr(orig, "pgcode", None)
-
-
 def _raise_if_name_taken(exc: IntegrityError) -> None:
-    if _sqlstate(exc) == UNIQUE_VIOLATION:
+    if sqlstate(exc) == UNIQUE_VIOLATION:
         raise ServiceNameTaken() from exc
 
 
