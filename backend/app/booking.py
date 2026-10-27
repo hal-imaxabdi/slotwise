@@ -15,6 +15,8 @@ from app.models import Appointment, Service, User
 from app.models.appointment import AppointmentStatus
 
 EXCLUSION_VIOLATION = "23P01"
+STAFF_ROLES = {"staff", "admin"}
+CUSTOMER_CHANGE_WINDOW = timedelta(hours=24)
 
 
 class BookingError(Exception):
@@ -27,6 +29,18 @@ class SlotTaken(BookingError):
 
 class SlotNotBookable(BookingError):
     """Outside business hours, blocked, in the past or off the grid (maps to 422)."""
+
+
+class AppointmentNotFound(BookingError):
+    """Unknown id, or not the caller's appointment (maps to 404)."""
+
+
+class ChangeWindowClosed(BookingError):
+    """A customer is inside the 24h cancel/reschedule window (maps to 403)."""
+
+
+class AppointmentNotActive(BookingError):
+    """Only booked appointments can be changed (maps to 409)."""
 
 
 def _sqlstate(exc: IntegrityError) -> str | None:
@@ -45,6 +59,26 @@ def _overlaps_active_appointment(db: Session, starts_at: datetime, ends_at: date
         .limit(1)
     ).first()
     return found is not None
+
+
+def _load_for_update(db: Session, user: User, appointment_id: uuid.UUID) -> Appointment:
+    """Lock and return the appointment. Customers only see their own."""
+    appointment = db.scalars(
+        select(Appointment).where(Appointment.id == appointment_id).with_for_update()
+    ).first()
+    if appointment is None:
+        raise AppointmentNotFound()
+    if user.role not in STAFF_ROLES and appointment.customer_id != user.id:
+        raise AppointmentNotFound()
+    return appointment
+
+
+def _check_change_window(user: User, appointment: Appointment, now: datetime) -> None:
+    """Customers need >= 24h before the appointment's current start. Staff are exempt."""
+    if user.role in STAFF_ROLES:
+        return
+    if appointment.starts_at - now < CUSTOMER_CHANGE_WINDOW:
+        raise ChangeWindowClosed()
 
 
 def create_appointment(
@@ -89,4 +123,32 @@ def create_appointment(
         if _sqlstate(exc) == EXCLUSION_VIOLATION:
             raise SlotTaken() from exc
         raise
+    return appointment
+
+
+def cancel_appointment(
+    db: Session,
+    *,
+    user: User,
+    appointment_id: uuid.UUID,
+    now: datetime,
+) -> Appointment:
+    """Cancel an appointment.
+
+    Raises AppointmentNotFound, ChangeWindowClosed, AppointmentNotActive.
+    Cancelling an already-cancelled appointment returns it unchanged.
+    """
+    appointment = _load_for_update(db, user, appointment_id)
+
+    if appointment.status == AppointmentStatus.CANCELLED:
+        return appointment
+    if appointment.status != AppointmentStatus.BOOKED:
+        raise AppointmentNotActive()
+
+    _check_change_window(user, appointment, now)
+
+    appointment.status = AppointmentStatus.CANCELLED.value
+    appointment.cancelled_at = now
+    appointment.cancelled_by_id = user.id
+    db.flush()
     return appointment
