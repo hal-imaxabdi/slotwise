@@ -1,0 +1,18 @@
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 28rem;
+  margin-top: 1rem;
+}
+
+.booking-form textarea {
+  font: inherit;
+  padding: 0.5rem;
+}
+
+.booking-count {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #555;
+}

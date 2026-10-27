@@ -14,11 +14,18 @@ interface SlotPickerProps {
   date: string;
   selected: string | null;
   onSelect: (slot: Slot) => void;
+  disabled?: boolean;
 }
 
 // The parent should remount this component (via `key`) when serviceId or date
 // changes, so state always starts at "loading" for a new query.
-export function SlotPicker({ serviceId, date, selected, onSelect }: SlotPickerProps) {
+export function SlotPicker({
+  serviceId,
+  date,
+  selected,
+  onSelect,
+  disabled = false,
+}: SlotPickerProps) {
   const [state, setState] = useState<State>({ kind: 'loading' });
   const [attempt, setAttempt] = useState(0);
 
@@ -69,6 +76,7 @@ export function SlotPicker({ serviceId, date, selected, onSelect }: SlotPickerPr
                 <button
                   type="button"
                   aria-pressed={selected === slot.starts_at}
+                  disabled={disabled}
                   onClick={() => {
                     onSelect(slot);
                   }}

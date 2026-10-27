@@ -2,8 +2,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getSlots, listServices } from '../api/endpoints.ts';
-import type { Service, SlotsResponse } from '../api/types.ts';
+import { createAppointment, getSlots, listServices } from '../api/endpoints.ts';
+import { ApiError } from '../api/errors.ts';
+import type { Appointment, Service, SlotsResponse } from '../api/types.ts';
 import { BookingPage } from './BookingPage.tsx';
 
 vi.mock('../api/endpoints.ts');
@@ -28,6 +29,16 @@ const SLOTS: SlotsResponse = {
     { starts_at: '2026-10-27T02:00:00Z', local_time: '09:00' },
     { starts_at: '2026-10-27T02:30:00Z', local_time: '09:30' },
   ],
+};
+
+const APPOINTMENT: Appointment = {
+  id: 'a1',
+  service_id: 's1',
+  starts_at: '2026-10-27T02:00:00Z',
+  ends_at: '2026-10-27T02:30:00Z',
+  status: 'booked',
+  notes: '',
+  cancelled_at: null,
 };
 
 function renderPage(path = '/services/s1/book') {
@@ -114,5 +125,97 @@ describe('BookingPage', () => {
     expect(await screen.findByRole('alert')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
     expect(getSlots).not.toHaveBeenCalled();
+  });
+
+  it('books the selected time with notes and shows a confirmation', async () => {
+    vi.mocked(listServices).mockResolvedValue(SERVICES);
+    vi.mocked(getSlots).mockResolvedValue(SLOTS);
+    vi.mocked(createAppointment).mockResolvedValue(APPOINTMENT);
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole('button', { name: '09:00' }));
+    await user.type(screen.getByLabelText('Notes (optional)'), 'Please use clippers');
+    await user.click(screen.getByRole('button', { name: 'Confirm booking' }));
+    expect(await screen.findByRole('heading', { name: 'Booking confirmed' })).toBeInTheDocument();
+    expect(createAppointment).toHaveBeenCalledWith({
+      service_id: 's1',
+      starts_at: '2026-10-27T02:00:00Z',
+      notes: 'Please use clippers',
+    });
+    expect(
+      screen.getByText('Classic Haircut on 2026-10-27 at 09:00 (Asia/Jakarta).'),
+    ).toBeInTheDocument();
+  });
+
+  it('sends empty notes by default and limits notes to 500 characters', async () => {
+    vi.mocked(listServices).mockResolvedValue(SERVICES);
+    vi.mocked(getSlots).mockResolvedValue(SLOTS);
+    vi.mocked(createAppointment).mockResolvedValue(APPOINTMENT);
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole('button', { name: '09:00' }));
+    expect(screen.getByLabelText('Notes (optional)')).toHaveAttribute('maxlength', '500');
+    await user.click(screen.getByRole('button', { name: 'Confirm booking' }));
+    expect(await screen.findByRole('heading', { name: 'Booking confirmed' })).toBeInTheDocument();
+    expect(createAppointment).toHaveBeenCalledWith({
+      service_id: 's1',
+      starts_at: '2026-10-27T02:00:00Z',
+      notes: '',
+    });
+  });
+
+  it('blocks a second submit while the first is in flight', async () => {
+    vi.mocked(listServices).mockResolvedValue(SERVICES);
+    vi.mocked(getSlots).mockResolvedValue(SLOTS);
+    vi.mocked(createAppointment).mockReturnValue(new Promise<Appointment>(() => undefined));
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole('button', { name: '09:00' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm booking' }));
+    expect(await screen.findByRole('button', { name: 'Booking...' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '09:00' })).toBeDisabled();
+    expect(screen.getByLabelText('Date')).toBeDisabled();
+    fireEvent.submit(screen.getByRole('form', { name: 'Booking details' }));
+    expect(createAppointment).toHaveBeenCalledTimes(1);
+  });
+
+  it('refetches the times and clears the selection when the slot was just taken', async () => {
+    vi.mocked(listServices).mockResolvedValue(SERVICES);
+    vi.mocked(getSlots)
+      .mockResolvedValueOnce(SLOTS)
+      .mockResolvedValueOnce({
+        ...SLOTS,
+        slots: [{ starts_at: '2026-10-27T02:30:00Z', local_time: '09:30' }],
+      });
+    vi.mocked(createAppointment).mockRejectedValue(
+      new ApiError(409, 'That time slot is no longer available', null),
+    );
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole('button', { name: '09:00' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm booking' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'That time slot is no longer available',
+    );
+    expect(await screen.findByRole('button', { name: '09:30' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '09:00' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Selected time/)).not.toBeInTheDocument();
+    expect(getSlots).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps the selection and allows a retry after another failure', async () => {
+    vi.mocked(listServices).mockResolvedValue(SERVICES);
+    vi.mocked(getSlots).mockResolvedValue(SLOTS);
+    vi.mocked(createAppointment).mockRejectedValue(new Error('boom'));
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole('button', { name: '09:00' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm booking' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Something went wrong. Please try again.',
+    );
+    expect(screen.getByRole('button', { name: 'Confirm booking' })).toBeEnabled();
+    expect(screen.getByText('Selected time: 09:00')).toBeInTheDocument();
+    expect(getSlots).toHaveBeenCalledTimes(1);
   });
 });

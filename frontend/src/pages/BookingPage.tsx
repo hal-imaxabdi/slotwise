@@ -1,11 +1,24 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { Link, useParams } from 'react-router';
+import { describeApiError } from '../api/describeError.ts';
+import { createAppointment } from '../api/endpoints.ts';
+import { ApiError } from '../api/errors.ts';
 import type { Slot } from '../api/types.ts';
 import { SlotPicker } from '../components/SlotPicker.tsx';
 import { useServices } from '../hooks/useServices.ts';
 import { todayInJakarta } from '../lib/dates.ts';
 import { formatDuration, formatIdr } from '../lib/format.ts';
+import './BookingPage.css';
+
+const NOTES_MAX = 500;
+const BUSINESS_TIMEZONE = 'Asia/Jakarta';
+
+interface Booked {
+  serviceName: string;
+  date: string;
+  time: string;
+}
 
 export function BookingPage() {
   const { serviceId } = useParams();
@@ -13,6 +26,12 @@ export function BookingPage() {
   const [today] = useState(() => todayInJakarta());
   const [date, setDate] = useState(today);
   const [slot, setSlot] = useState<Slot | null>(null);
+  const [notes, setNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [booked, setBooked] = useState<Booked | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const inFlight = useRef(false);
 
   if (state.kind === 'loading') {
     return <p role="status">Loading...</p>;
@@ -46,6 +65,62 @@ export function BookingPage() {
   function handleDateChange(event: ChangeEvent<HTMLInputElement>) {
     setDate(event.target.value);
     setSlot(null);
+    setSubmitError(null);
+  }
+
+  function handleSelect(chosen: Slot) {
+    setSlot(chosen);
+    setSubmitError(null);
+  }
+
+  function handleBookAnother() {
+    setBooked(null);
+    setSlot(null);
+    setNotes('');
+    setSubmitError(null);
+    setRefreshKey((n) => n + 1);
+  }
+
+  const handleSubmit = async () => {
+    if (slot === null || inFlight.current) {
+      return;
+    }
+    inFlight.current = true;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await createAppointment({
+        service_id: service.id,
+        starts_at: slot.starts_at,
+        notes: notes.trim(),
+      });
+      setBooked({ serviceName: service.name, date, time: slot.local_time });
+    } catch (error) {
+      setSubmitError(describeApiError(error));
+      if (error instanceof ApiError && error.status === 409) {
+        // Someone else took the time: drop the selection and reload the list.
+        setSlot(null);
+        setRefreshKey((n) => n + 1);
+      }
+    } finally {
+      inFlight.current = false;
+      setSubmitting(false);
+    }
+  };
+
+  if (booked !== null) {
+    return (
+      <section>
+        <h1>Booking confirmed</h1>
+        <p>{`${booked.serviceName} on ${booked.date} at ${booked.time} (${BUSINESS_TIMEZONE}).`}</p>
+        <p>
+          <button type="button" onClick={handleBookAnother}>
+            Book another time
+          </button>{' '}
+          <Link to="/services">Back to services</Link>
+        </p>
+      </section>
+    );
   }
 
   return (
@@ -57,20 +132,55 @@ export function BookingPage() {
       <p>{`${formatDuration(service.duration_minutes)} - ${formatIdr(service.price_idr)}`}</p>
       <div>
         <label htmlFor="booking-date">Date</label>{' '}
-        <input id="booking-date" type="date" min={today} value={date} onChange={handleDateChange} />
+        <input
+          id="booking-date"
+          type="date"
+          min={today}
+          value={date}
+          disabled={submitting}
+          onChange={handleDateChange}
+        />
       </div>
       {date === '' && <p>Choose a date to see available times.</p>}
       {date !== '' && !dateOk && <p role="alert">Choose today or a later date.</p>}
+      {submitError !== null && <p role="alert">{submitError}</p>}
       {dateOk && (
         <SlotPicker
-          key={`${service.id}:${date}`}
+          key={`${service.id}:${date}:${refreshKey}`}
           serviceId={service.id}
           date={date}
           selected={slot === null ? null : slot.starts_at}
-          onSelect={setSlot}
+          onSelect={handleSelect}
+          disabled={submitting}
         />
       )}
-      {slot !== null && <p role="status">{`Selected time: ${slot.local_time}`}</p>}
+      {slot !== null && (
+        <form
+          className="booking-form"
+          aria-label="Booking details"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void handleSubmit();
+          }}
+        >
+          <p role="status">{`Selected time: ${slot.local_time}`}</p>
+          <label htmlFor="booking-notes">Notes (optional)</label>
+          <textarea
+            id="booking-notes"
+            rows={3}
+            maxLength={NOTES_MAX}
+            value={notes}
+            disabled={submitting}
+            onChange={(event) => {
+              setNotes(event.target.value);
+            }}
+          />
+          <p className="booking-count">{`${notes.length}/${NOTES_MAX}`}</p>
+          <button type="submit" disabled={submitting}>
+            {submitting ? 'Booking...' : 'Confirm booking'}
+          </button>
+        </form>
+      )}
     </section>
   );
 }
