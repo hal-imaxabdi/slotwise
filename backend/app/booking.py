@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.availability import BUSINESS_TZ, get_free_slots
 from app.dbutil import sqlstate
+from app.locks import lock_schedule_shared
 from app.models import Appointment, Service, User
 from app.models.appointment import AppointmentStatus
 
@@ -125,7 +126,8 @@ def create_appointment(
 ) -> Appointment:
     """Book `service_id` at `starts_at`, for `user` or (staff only) for `customer_id`.
 
-    created_by_id is always the acting user.
+    created_by_id is always the acting user. Holds the shared schedule lock from
+    the availability read until the caller commits.
     Raises BookingForbidden, CustomerNotFound, ServiceNotFound (unknown or
     inactive service), SlotTaken, SlotNotBookable.
     """
@@ -134,6 +136,7 @@ def create_appointment(
     starts_at = starts_at.astimezone(timezone.utc)
     local_day = starts_at.astimezone(BUSINESS_TZ).date()
 
+    lock_schedule_shared(db)  # before reading hours/closures, so admin changes can't slip in
     free = get_free_slots(db, service_id, local_day, now=now)  # may raise ServiceNotFound
     service = db.get(Service, service_id)
     assert service is not None  # get_free_slots just loaded it
@@ -161,6 +164,7 @@ def create_appointment(
             raise SlotTaken() from exc
         raise
     return appointment
+
 
 
 def cancel_appointment(
@@ -201,10 +205,13 @@ def reschedule_appointment(
 ) -> Appointment:
     """Move a booked appointment to `starts_at` (same service, same length).
 
-    The 24h rule applies to the CURRENT start time for customers.
+    The 24h rule applies to the CURRENT start time for customers. Takes the
+    shared schedule lock first, then the row lock, so lock order is the same
+    everywhere.
     Raises AppointmentNotFound, AppointmentNotActive, ChangeWindowClosed,
     ServiceNotFound, SlotTaken, SlotNotBookable.
     """
+    lock_schedule_shared(db)
     appointment = _load_for_update(db, user, appointment_id)
 
     if appointment.status != AppointmentStatus.BOOKED:

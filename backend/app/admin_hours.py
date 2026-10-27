@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.availability import BUSINESS_TZ
 from app.booking import BookingError, BookingForbidden
 from app.dbutil import sqlstate
+from app.locks import lock_schedule_exclusive
 from app.models import Appointment, AppointmentStatus, BusinessHour, Role, User
 
 GRID_MINUTES = 30
@@ -117,12 +118,16 @@ def replace_day(
 ) -> list[BusinessHour]:
     """Replace the open intervals of one weekday (admin only). [] closes the day.
 
+    Takes the exclusive schedule lock before counting conflicts, so no booking
+    can commit between the check and the write.
     Raises BookingForbidden, InvalidHours, HoursConflictWithAppointments.
     Submitting the hours that are already stored changes nothing.
     """
     _require_admin(user)
     _validate_weekday(weekday)
     new = _validate_intervals(intervals)
+
+    lock_schedule_exclusive(db)  # waits for in-flight bookings; blocks new ones until commit
 
     existing = list(
         db.scalars(

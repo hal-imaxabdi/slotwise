@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.availability import BUSINESS_TZ
 from app.booking import STAFF_ROLES, BookingError, BookingForbidden
+from app.locks import lock_schedule_exclusive
 from app.models import Appointment, UnavailablePeriod, User
 from app.models.appointment import AppointmentStatus
 
@@ -51,6 +52,8 @@ def create_period(
 ) -> UnavailablePeriod:
     """Block [starts_at, ends_at) for everyone (staff/admin only).
 
+    Takes the exclusive schedule lock before counting conflicts, so no booking
+    can commit between the check and the insert.
     Raises BookingForbidden, InvalidPeriod, PeriodConflictsWithAppointments.
     """
     if user.role not in STAFF_ROLES:
@@ -62,6 +65,8 @@ def create_period(
         raise InvalidPeriod()
     if not (_on_grid(starts_at) and _on_grid(ends_at)):
         raise InvalidPeriod()
+
+    lock_schedule_exclusive(db)  # waits for in-flight bookings; blocks new ones until commit
 
     conflicts = db.scalar(
         select(func.count())
