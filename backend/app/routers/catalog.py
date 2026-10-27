@@ -1,20 +1,19 @@
 import uuid
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from app.deps import get_now
 
 from app.availability import BUSINESS_TZ, ServiceNotFound, get_free_slots
 from app.database import get_db
+from app.deps import get_now
 from app.models import Service
 from app.schemas import ServiceOut, SlotOut, SlotsOut
 
 router = APIRouter(tags=["catalog"])
 
 MAX_DAYS_AHEAD = 90
-
 
 
 @router.get("/services", response_model=list[ServiceOut])
@@ -31,17 +30,19 @@ def list_slots(
     db: Session = Depends(get_db),
     now: datetime = Depends(get_now),
 ):
-    
     today = now.astimezone(BUSINESS_TZ).date()
     if day > today + timedelta(days=MAX_DAYS_AHEAD):
         raise HTTPException(422, f"date must be within {MAX_DAYS_AHEAD} days from today")
+
+    service = db.get(Service, service_id)
+    if service is None or not service.is_active:
+        raise HTTPException(404, "Service not found")
 
     try:
         starts = get_free_slots(db, service_id, day, now=now)
     except ServiceNotFound:
         raise HTTPException(404, "Service not found")
 
-    service = db.get(Service, service_id)
     return SlotsOut(
         service_id=service_id,
         date=day,

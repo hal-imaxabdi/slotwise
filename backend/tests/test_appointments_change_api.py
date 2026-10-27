@@ -257,4 +257,20 @@ def test_reschedule_cancelled_appointment_is_409(api, db):
     assert resched(api, csrf, appt.id, NEW_SLOT).status_code == 409
     db.refresh(appt)
     assert appt.starts_at == SLOT
+
+    
+def test_reschedule_on_inactive_service_is_409(api, db):
+    owner = add_user(db, "a@example.com")
+    service = add_service(db)
+    appt = add_appt(db, owner, service, SLOT)
+    service.is_active = False
+    db.commit()
+    csrf = login(api, "a@example.com")
+    r = resched(api, csrf, appt.id, NEW_SLOT)
+    assert r.status_code == 409
+    assert "no longer available" in r.text
+    db.refresh(appt)
+    assert appt.starts_at == SLOT
+    assert appt.status == "booked"
+    
     
