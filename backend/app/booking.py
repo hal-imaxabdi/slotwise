@@ -48,17 +48,20 @@ def _sqlstate(exc: IntegrityError) -> str | None:
     return getattr(orig, "sqlstate", None) or getattr(orig, "pgcode", None)
 
 
-def _overlaps_active_appointment(db: Session, starts_at: datetime, ends_at: datetime) -> bool:
-    found = db.scalars(
-        select(Appointment.id)
-        .where(
-            Appointment.status != AppointmentStatus.CANCELLED.value,
-            Appointment.starts_at < ends_at,
-            Appointment.ends_at > starts_at,
-        )
-        .limit(1)
-    ).first()
-    return found is not None
+def _overlaps_active_appointment(
+    db: Session,
+    starts_at: datetime,
+    ends_at: datetime,
+    exclude_id: uuid.UUID | None = None,
+) -> bool:
+    query = select(Appointment.id).where(
+        Appointment.status != AppointmentStatus.CANCELLED.value,
+        Appointment.starts_at < ends_at,
+        Appointment.ends_at > starts_at,
+    )
+    if exclude_id is not None:
+        query = query.where(Appointment.id != exclude_id)
+    return db.scalars(query.limit(1)).first() is not None
 
 
 def _load_for_update(db: Session, user: User, appointment_id: uuid.UUID) -> Appointment:
@@ -151,4 +154,56 @@ def cancel_appointment(
     appointment.cancelled_at = now
     appointment.cancelled_by_id = user.id
     db.flush()
+    return appointment
+
+
+def reschedule_appointment(
+    db: Session,
+    *,
+    user: User,
+    appointment_id: uuid.UUID,
+    starts_at: datetime,
+    now: datetime,
+) -> Appointment:
+    """Move a booked appointment to `starts_at` (same service, same length).
+
+    The 24h rule applies to the CURRENT start time for customers.
+    Raises AppointmentNotFound, AppointmentNotActive, ChangeWindowClosed,
+    ServiceNotFound, SlotTaken, SlotNotBookable.
+    """
+    appointment = _load_for_update(db, user, appointment_id)
+
+    if appointment.status != AppointmentStatus.BOOKED:
+        raise AppointmentNotActive()
+
+    _check_change_window(user, appointment, now)
+
+    starts_at = starts_at.astimezone(timezone.utc)
+    local_day = starts_at.astimezone(BUSINESS_TZ).date()
+
+    free = get_free_slots(
+        db,
+        appointment.service_id,
+        local_day,
+        now=now,
+        exclude_appointment_id=appointment.id,
+    )
+    service = db.get(Service, appointment.service_id)
+    assert service is not None  # get_free_slots just loaded it
+    ends_at = starts_at + timedelta(minutes=service.duration_minutes)
+
+    if starts_at not in free:
+        if _overlaps_active_appointment(db, starts_at, ends_at, exclude_id=appointment.id):
+            raise SlotTaken()
+        raise SlotNotBookable()
+
+    try:
+        with db.begin_nested():  # savepoint, same reasoning as create_appointment
+            appointment.starts_at = starts_at
+            appointment.ends_at = ends_at
+            db.flush()
+    except IntegrityError as exc:
+        if _sqlstate(exc) == EXCLUSION_VIOLATION:
+            raise SlotTaken() from exc
+        raise
     return appointment
