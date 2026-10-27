@@ -1,7 +1,8 @@
 import uuid
 from datetime import date, datetime
+from typing import Annotated
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstraints
 
 
 class LoginIn(BaseModel):
@@ -89,4 +90,27 @@ class StaffAppointmentOut(AppointmentOut):
 class StaffAppointmentListItem(StaffAppointmentOut):
     customer_email: str
     customer_name: str
+
+
+PeriodReason = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)
+]
+
+
+class UnavailablePeriodCreateIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    starts_at: AwareDatetime
+    ends_at: AwareDatetime
+    reason: PeriodReason
+
+
+class UnavailablePeriodOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    starts_at: datetime  # UTC
+    ends_at: datetime  # UTC
+    reason: str
+    created_by_id: uuid.UUID
     
