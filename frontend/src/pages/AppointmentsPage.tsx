@@ -1,16 +1,18 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { describeApiError } from '../api/describeError.ts';
 import { cancelAppointment } from '../api/endpoints.ts';
 import { ApiError } from '../api/errors.ts';
 import type { Appointment, AppointmentStatus } from '../api/types.ts';
+import { RescheduleForm } from '../components/RescheduleForm.tsx';
 import { useMyAppointments } from '../hooks/useMyAppointments.ts';
 import { useServices } from '../hooks/useServices.ts';
 import { canChangeAppointment, formatAppointmentRange } from '../lib/dates.ts';
 import './AppointmentsPage.css';
 
 const BUSINESS_TIMEZONE = 'Asia/Jakarta';
-const CANCEL_HINT = 'Appointments can only be cancelled at least 24 hours before they start.';
+const CHANGE_HINT =
+  'Appointments can only be cancelled or rescheduled at least 24 hours before they start.';
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
   booked: 'Booked',
   cancelled: 'Cancelled',
@@ -24,14 +26,23 @@ function readClock(): Date {
   return new Date();
 }
 
+interface Panel {
+  id: string;
+  kind: 'cancel' | 'reschedule';
+}
+
 interface ItemProps {
   appointment: Appointment;
   serviceName: string;
   showActions: boolean;
   allowed: boolean;
+  canReschedule: boolean;
   confirming: boolean;
+  rescheduling: boolean;
   busy: boolean;
+  reschedulePanel: ReactNode;
   onAsk: () => void;
+  onReschedule: () => void;
   onKeep: () => void;
   onConfirm: () => void;
 }
@@ -41,21 +52,25 @@ function AppointmentItem({
   serviceName,
   showActions,
   allowed,
+  canReschedule,
   confirming,
+  rescheduling,
   busy,
+  reschedulePanel,
   onAsk,
+  onReschedule,
   onKeep,
   onConfirm,
 }: ItemProps) {
   const when = formatAppointmentRange(appointment.starts_at, appointment.ends_at);
-  const hintId = `cancel-hint-${appointment.id}`;
+  const hintId = `change-hint-${appointment.id}`;
   return (
     <li className="appointment">
       <h3>{serviceName}</h3>
       <p>{when}</p>
       <p>{`Status: ${STATUS_LABELS[appointment.status]}`}</p>
       {appointment.notes !== '' && <p>{`Notes: ${appointment.notes}`}</p>}
-      {showActions && !confirming && (
+      {showActions && !confirming && !rescheduling && (
         <>
           <button
             type="button"
@@ -65,10 +80,21 @@ function AppointmentItem({
             onClick={onAsk}
           >
             Cancel
-          </button>
+          </button>{' '}
+          {canReschedule && (
+            <button
+              type="button"
+              disabled={!allowed || busy}
+              aria-label={`Reschedule ${serviceName} on ${when}`}
+              aria-describedby={allowed ? undefined : hintId}
+              onClick={onReschedule}
+            >
+              Reschedule
+            </button>
+          )}
           {!allowed && (
             <p id={hintId} className="appointment-hint">
-              {CANCEL_HINT}
+              {CHANGE_HINT}
             </p>
           )}
         </>
@@ -84,6 +110,7 @@ function AppointmentItem({
           </button>
         </div>
       )}
+      {showActions && rescheduling && reschedulePanel}
     </li>
   );
 }
@@ -92,8 +119,9 @@ export function AppointmentsPage() {
   const services = useServices();
   const mine = useMyAppointments();
   const [now, setNow] = useState(readClock);
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [panel, setPanel] = useState<Panel | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [formBusy, setFormBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const inFlight = useRef(false);
@@ -138,6 +166,8 @@ export function AppointmentsPage() {
     .filter((a) => !isUpcoming(a))
     .sort((a, b) => Date.parse(b.starts_at) - Date.parse(a.starts_at));
 
+  const busy = submitting || formBusy;
+
   const handleCancel = async (appointment: Appointment) => {
     if (inFlight.current) {
       return;
@@ -149,18 +179,18 @@ export function AppointmentsPage() {
     try {
       const updated = await cancelAppointment(appointment.id);
       mine.replace(updated);
-      setConfirmingId(null);
+      setPanel(null);
       setNotice('Appointment cancelled.');
     } catch (error) {
       setActionError(describeApiError(error));
       if (error instanceof ApiError) {
         if (error.status === 403) {
           // Server says it is too late (or forbidden): re-read the clock, keep the session.
-          setConfirmingId(null);
+          setPanel(null);
           setNow(readClock());
         } else if (error.status === 404 || error.status === 409) {
           // Our list is stale: resync with the server.
-          setConfirmingId(null);
+          setPanel(null);
           setNow(readClock());
           mine.refresh();
         }
@@ -171,28 +201,73 @@ export function AppointmentsPage() {
     }
   };
 
-  const renderItem = (a: Appointment, showActions: boolean) => (
-    <AppointmentItem
-      key={a.id}
-      appointment={a}
-      serviceName={nameOf(a)}
-      showActions={showActions}
-      allowed={canChangeAppointment(a.starts_at, now)}
-      confirming={confirmingId === a.id}
-      busy={submitting}
-      onAsk={() => {
-        setActionError(null);
-        setNotice(null);
-        setConfirmingId(a.id);
-      }}
-      onKeep={() => {
-        setConfirmingId(null);
-      }}
-      onConfirm={() => {
-        void handleCancel(a);
-      }}
-    />
-  );
+  const handleRescheduled = (updated: Appointment) => {
+    mine.replace(updated);
+    setPanel(null);
+    setNotice('Appointment rescheduled.');
+  };
+
+  const handleTooLate = (message: string) => {
+    setActionError(message);
+    setPanel(null);
+    setNow(readClock());
+  };
+
+  const handleGone = (message: string) => {
+    setActionError(message);
+    setPanel(null);
+    setNow(readClock());
+    mine.refresh();
+  };
+
+  const renderItem = (a: Appointment, showActions: boolean) => {
+    const open = panel !== null && panel.id === a.id ? panel.kind : null;
+    const rescheduling = open === 'reschedule';
+    return (
+      <AppointmentItem
+        key={a.id}
+        appointment={a}
+        serviceName={nameOf(a)}
+        showActions={showActions}
+        allowed={canChangeAppointment(a.starts_at, now)}
+        canReschedule={names.has(a.service_id)}
+        confirming={open === 'cancel'}
+        rescheduling={rescheduling}
+        busy={busy}
+        reschedulePanel={
+          rescheduling ? (
+            <RescheduleForm
+              appointment={a}
+              serviceName={nameOf(a)}
+              onRescheduled={handleRescheduled}
+              onClose={() => {
+                setPanel(null);
+              }}
+              onTooLate={handleTooLate}
+              onGone={handleGone}
+              onBusyChange={setFormBusy}
+            />
+          ) : null
+        }
+        onAsk={() => {
+          setActionError(null);
+          setNotice(null);
+          setPanel({ id: a.id, kind: 'cancel' });
+        }}
+        onReschedule={() => {
+          setActionError(null);
+          setNotice(null);
+          setPanel({ id: a.id, kind: 'reschedule' });
+        }}
+        onKeep={() => {
+          setPanel(null);
+        }}
+        onConfirm={() => {
+          void handleCancel(a);
+        }}
+      />
+    );
+  };
 
   return (
     <section>
