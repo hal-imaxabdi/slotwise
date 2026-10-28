@@ -1,4 +1,5 @@
-import type { AuthOut } from '../api/types.ts';
+import type { AuthContextValue } from '../auth/context.ts';
+import type { AuthOut, Role } from '../api/types.ts';
 
 export const AUTH: AuthOut = {
   user: {
@@ -9,3 +10,15 @@ export const AUTH: AuthOut = {
   },
   csrf_token: 'csrf-abc',
 };
+
+/** Auth context value for tests; pass null for an anonymous visitor. */
+export function authValueFor(role: Role | null): AuthContextValue {
+  return {
+    status: role === null ? 'anonymous' : 'authenticated',
+    user: role === null ? null : { ...AUTH.user, role },
+    error: null,
+    login: () => Promise.resolve(),
+    logout: () => Promise.resolve(),
+    retry: () => undefined,
+  };
+}

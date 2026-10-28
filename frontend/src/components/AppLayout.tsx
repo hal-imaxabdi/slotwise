@@ -16,6 +16,12 @@ function pageTitle(pathname: string): string {
   if (pathname.startsWith('/services')) {
     return `Services - ${APP_NAME}`;
   }
+  if (pathname.startsWith('/staff')) {
+    return `Staff - ${APP_NAME}`;
+  }
+  if (pathname.startsWith('/admin')) {
+    return `Admin - ${APP_NAME}`;
+  }
   return APP_NAME;
 }
 
@@ -25,6 +31,8 @@ export function AppLayout() {
   const [error, setError] = useState<string | null>(null);
   const mainRef = useRef<HTMLElement>(null);
   const title = pageTitle(pathname);
+  const isStaff = user?.role === 'staff' || user?.role === 'admin';
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     document.title = title;
@@ -55,6 +63,8 @@ export function AppLayout() {
         <nav aria-label="Main">
           <NavLink to="/services">Services</NavLink>
           <NavLink to="/appointments">My appointments</NavLink>
+          {isStaff && <NavLink to="/staff">Staff</NavLink>}
+          {isAdmin && <NavLink to="/admin">Admin</NavLink>}
         </nav>
         <div className="app-user">
           {user !== null && <span>{user.full_name}</span>}
