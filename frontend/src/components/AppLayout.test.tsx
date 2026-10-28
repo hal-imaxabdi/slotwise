@@ -9,13 +9,14 @@ import { AppLayout } from './AppLayout.tsx';
 
 vi.mock('../api/endpoints.ts');
 
-function renderLayout() {
+function renderLayout(path = '/services') {
   return render(
-    <MemoryRouter initialEntries={['/services']}>
+    <MemoryRouter initialEntries={[path]}>
       <AuthProvider>
         <Routes>
           <Route element={<AppLayout />}>
             <Route path="services" element={<p>Services content</p>} />
+            <Route path="appointments" element={<p>Appointments content</p>} />
           </Route>
         </Routes>
       </AuthProvider>
@@ -38,6 +39,24 @@ describe('AppLayout', () => {
       'page',
     );
     expect(screen.getByRole('main')).toHaveTextContent('Services content');
+  });
+
+  it('links to My appointments', async () => {
+    renderLayout();
+    expect(await screen.findByRole('link', { name: 'My appointments' })).toHaveAttribute(
+      'href',
+      '/appointments',
+    );
+  });
+
+  it('marks My appointments as current on /appointments', async () => {
+    renderLayout('/appointments');
+    expect(await screen.findByRole('link', { name: 'My appointments' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(screen.getByRole('link', { name: 'Services' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('main')).toHaveTextContent('Appointments content');
   });
 
   it('calls logout when Sign out is clicked', async () => {

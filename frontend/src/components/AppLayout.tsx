@@ -22,6 +22,7 @@ export function AppLayout() {
         <span className="brand">Slotwise</span>
         <nav aria-label="Main">
           <NavLink to="/services">Services</NavLink>
+          <NavLink to="/appointments">My appointments</NavLink>
         </nav>
         <div className="app-user">
           {user !== null && <span>{user.full_name}</span>}

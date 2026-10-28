@@ -117,6 +117,7 @@ export function BookingPage() {
           <button type="button" onClick={handleBookAnother}>
             Book another time
           </button>{' '}
+          <Link to="/appointments">My appointments</Link>{' '}
           <Link to="/services">Back to services</Link>
         </p>
       </section>

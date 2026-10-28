@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getSlots, listServices, logout, me } from './api/endpoints.ts';
+import { getSlots, listMyAppointments, listServices, logout, me } from './api/endpoints.ts';
 import { UnauthorizedError } from './api/errors.ts';
 import type { Service } from './api/types.ts';
 import App from './App.tsx';
@@ -74,6 +74,17 @@ describe('App routing', () => {
     renderApp('/services/s1/book');
     expect(await screen.findByRole('heading', { name: 'Book Classic Haircut' })).toBeInTheDocument();
     expect(await screen.findByText('No times are available on this date.')).toBeInTheDocument();
+  });
+
+  it('shows the appointments page for a signed-in user', async () => {
+    vi.mocked(me).mockResolvedValue(AUTH);
+    vi.mocked(listServices).mockResolvedValue(SERVICES);
+    vi.mocked(listMyAppointments).mockResolvedValue([]);
+    renderApp('/appointments');
+    expect(
+      await screen.findByRole('heading', { name: 'My appointments', level: 1 }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('You have no appointments yet.')).toBeInTheDocument();
   });
 
   it('redirects unknown paths to the services page', async () => {
