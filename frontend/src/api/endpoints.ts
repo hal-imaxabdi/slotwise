@@ -8,6 +8,8 @@ import type {
   CreateAppointmentInput,
   Service,
   SlotsResponse,
+  StaffAppointment,
+  StaffAppointmentQuery,
 } from './types.ts';
 
 export async function login(email: string, password: string): Promise<AuthOut> {
@@ -83,4 +85,23 @@ export function rescheduleAppointment(id: string, startsAt: string): Promise<App
     method: 'POST',
     body: { starts_at: startsAt },
   });
+}
+
+export function listStaffAppointments(
+  query: StaffAppointmentQuery,
+  signal?: AbortSignal,
+): Promise<StaffAppointment[]> {
+  const params = new URLSearchParams();
+  if (query.from !== '') {
+    params.set('from', query.from);
+  }
+  if (query.to !== '') {
+    params.set('to', query.to);
+  }
+  if (query.status !== '') {
+    params.set('status', query.status);
+  }
+  params.set('limit', String(query.limit));
+  params.set('offset', String(query.offset));
+  return request<StaffAppointment[]>(`/staff/appointments?${params.toString()}`, { signal });
 }

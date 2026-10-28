@@ -59,3 +59,19 @@ export interface ChangePasswordInput {
 export interface ChangePasswordResult {
   other_sessions_revoked: number;
 }
+
+export interface StaffAppointment extends Appointment {
+  customer_id: string;
+  created_by_id: string | null;
+  customer_email: string;
+  customer_name: string;
+}
+
+/** Empty string means "no filter" for from, to and status. Dates are Jakarta days (YYYY-MM-DD). */
+export interface StaffAppointmentQuery {
+  from: string;
+  to: string;
+  status: AppointmentStatus | '';
+  limit: number;
+  offset: number;
+}

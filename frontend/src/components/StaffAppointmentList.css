@@ -1,0 +1,28 @@
+.staff-appointment-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.staff-appointment {
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.staff-appointment h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.staff-appointment p {
+  margin: 0.25rem 0;
+}
+
+.staff-pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
