@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { describeApiError } from '../api/describeError.ts';
 import { rescheduleAppointment } from '../api/endpoints.ts';
 import { ApiError } from '../api/errors.ts';
@@ -22,6 +22,8 @@ function jakartaDateOf(iso: string): string {
 function addMs(iso: string, ms: number): string {
   return new Date(Date.parse(iso) + ms).toISOString();
 }
+
+type FocusTarget = 'date' | 'confirm';
 
 interface RescheduleFormProps {
   appointment: Appointment;
@@ -49,6 +51,23 @@ export function RescheduleForm({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const inFlight = useRef(false);
+  const dateRef = useRef<HTMLInputElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+  // Starts at 'date' so focus lands in the panel when it opens.
+  const pendingFocus = useRef<FocusTarget | null>('date');
+
+  useEffect(() => {
+    const target = pendingFocus.current;
+    if (target === null || submitting) {
+      return;
+    }
+    pendingFocus.current = null;
+    if (target === 'confirm' && confirmRef.current !== null) {
+      confirmRef.current.focus();
+    } else {
+      dateRef.current?.focus();
+    }
+  });
 
   const durationMs = Date.parse(appointment.ends_at) - Date.parse(appointment.starts_at);
   const dateUsable = date !== '' && date >= minDate;
@@ -84,8 +103,10 @@ export function RescheduleForm({
         setError(message);
         setSelected(null);
         setReloads((n) => n + 1);
+        pendingFocus.current = 'date';
       } else {
         setError(message);
+        pendingFocus.current = 'confirm';
       }
     } finally {
       inFlight.current = false;
@@ -100,6 +121,7 @@ export function RescheduleForm({
       <div>
         <label htmlFor={dateId}>New date</label>{' '}
         <input
+          ref={dateRef}
           id={dateId}
           type="date"
           value={date}
@@ -134,6 +156,7 @@ export function RescheduleForm({
           <p>{`New time: ${formatAppointmentRange(selected, addMs(selected, durationMs))}`}</p>
           <div>
             <button
+              ref={confirmRef}
               type="button"
               disabled={submitting}
               onClick={() => {

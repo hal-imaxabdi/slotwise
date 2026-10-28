@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { describeApiError } from '../api/describeError.ts';
 import { cancelAppointment } from '../api/endpoints.ts';
@@ -19,6 +19,12 @@ const STATUS_LABELS: Record<AppointmentStatus, string> = {
   completed: 'Completed',
   no_show: 'No-show',
 };
+
+// Element ids used to move keyboard focus after a panel opens or closes.
+const HEADING_ID = 'appointments-heading';
+const cancelButtonId = (id: string) => `cancel-btn-${id}`;
+const rescheduleButtonId = (id: string) => `reschedule-btn-${id}`;
+const confirmGroupId = (id: string) => `cancel-confirm-${id}`;
 
 // Reads the clock outside the component body: it is only called from a
 // lazy state initializer and from event handlers, never during render.
@@ -73,6 +79,7 @@ function AppointmentItem({
       {showActions && !confirming && !rescheduling && (
         <>
           <button
+            id={cancelButtonId(appointment.id)}
             type="button"
             disabled={!allowed || busy}
             aria-label={`Cancel ${serviceName} on ${when}`}
@@ -83,6 +90,7 @@ function AppointmentItem({
           </button>{' '}
           {canReschedule && (
             <button
+              id={rescheduleButtonId(appointment.id)}
               type="button"
               disabled={!allowed || busy}
               aria-label={`Reschedule ${serviceName} on ${when}`}
@@ -100,7 +108,12 @@ function AppointmentItem({
         </>
       )}
       {showActions && confirming && (
-        <div role="group" aria-label={`Confirm cancellation of ${serviceName}`}>
+        <div
+          id={confirmGroupId(appointment.id)}
+          role="group"
+          tabIndex={-1}
+          aria-label={`Confirm cancellation of ${serviceName}`}
+        >
           <p>Cancel this appointment?</p>
           <button type="button" disabled={busy} onClick={onConfirm}>
             {busy ? 'Cancelling...' : 'Yes, cancel appointment'}
@@ -125,6 +138,17 @@ export function AppointmentsPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const inFlight = useRef(false);
+  // Id of the element that should receive focus after the next render.
+  const pendingFocus = useRef<string | null>(null);
+
+  useEffect(() => {
+    const id = pendingFocus.current;
+    if (id === null) {
+      return;
+    }
+    pendingFocus.current = null;
+    document.getElementById(id)?.focus();
+  });
 
   const sState = services.state;
   const aState = mine.state;
@@ -181,19 +205,23 @@ export function AppointmentsPage() {
       mine.replace(updated);
       setPanel(null);
       setNotice('Appointment cancelled.');
+      pendingFocus.current = HEADING_ID;
     } catch (error) {
       setActionError(describeApiError(error));
-      if (error instanceof ApiError) {
-        if (error.status === 403) {
-          // Server says it is too late (or forbidden): re-read the clock, keep the session.
-          setPanel(null);
-          setNow(readClock());
-        } else if (error.status === 404 || error.status === 409) {
-          // Our list is stale: resync with the server.
-          setPanel(null);
-          setNow(readClock());
-          mine.refresh();
-        }
+      if (error instanceof ApiError && error.status === 403) {
+        // Server says it is too late (or forbidden): re-read the clock, keep the session.
+        setPanel(null);
+        setNow(readClock());
+        pendingFocus.current = HEADING_ID;
+      } else if (error instanceof ApiError && (error.status === 404 || error.status === 409)) {
+        // Our list is stale: resync with the server.
+        setPanel(null);
+        setNow(readClock());
+        mine.refresh();
+        pendingFocus.current = HEADING_ID;
+      } else {
+        // Panel stays open for a retry; the clicked button was disabled, so refocus the panel.
+        pendingFocus.current = confirmGroupId(appointment.id);
       }
     } finally {
       inFlight.current = false;
@@ -205,12 +233,14 @@ export function AppointmentsPage() {
     mine.replace(updated);
     setPanel(null);
     setNotice('Appointment rescheduled.');
+    pendingFocus.current = HEADING_ID;
   };
 
   const handleTooLate = (message: string) => {
     setActionError(message);
     setPanel(null);
     setNow(readClock());
+    pendingFocus.current = HEADING_ID;
   };
 
   const handleGone = (message: string) => {
@@ -218,6 +248,7 @@ export function AppointmentsPage() {
     setPanel(null);
     setNow(readClock());
     mine.refresh();
+    pendingFocus.current = HEADING_ID;
   };
 
   const renderItem = (a: Appointment, showActions: boolean) => {
@@ -241,6 +272,7 @@ export function AppointmentsPage() {
               serviceName={nameOf(a)}
               onRescheduled={handleRescheduled}
               onClose={() => {
+                pendingFocus.current = rescheduleButtonId(a.id);
                 setPanel(null);
               }}
               onTooLate={handleTooLate}
@@ -252,6 +284,7 @@ export function AppointmentsPage() {
         onAsk={() => {
           setActionError(null);
           setNotice(null);
+          pendingFocus.current = confirmGroupId(a.id);
           setPanel({ id: a.id, kind: 'cancel' });
         }}
         onReschedule={() => {
@@ -260,6 +293,7 @@ export function AppointmentsPage() {
           setPanel({ id: a.id, kind: 'reschedule' });
         }}
         onKeep={() => {
+          pendingFocus.current = cancelButtonId(a.id);
           setPanel(null);
         }}
         onConfirm={() => {
@@ -271,7 +305,9 @@ export function AppointmentsPage() {
 
   return (
     <section>
-      <h1>My appointments</h1>
+      <h1 id={HEADING_ID} tabIndex={-1}>
+        My appointments
+      </h1>
       {notice !== null && <p role="status">{notice}</p>}
       {actionError !== null && <p role="alert">{actionError}</p>}
       {appointments.length === 0 ? (

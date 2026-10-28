@@ -1,11 +1,34 @@
-import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router';
+import { useEffect, useRef, useState } from 'react';
+import type { MouseEvent } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router';
 import { describeApiError } from '../api/describeError.ts';
 import { useAuth } from '../auth/useAuth.ts';
 
+const APP_NAME = 'Slotwise';
+
+function pageTitle(pathname: string): string {
+  if (pathname.startsWith('/appointments')) {
+    return `My appointments - ${APP_NAME}`;
+  }
+  if (pathname.startsWith('/services/')) {
+    return `Book a service - ${APP_NAME}`;
+  }
+  if (pathname.startsWith('/services')) {
+    return `Services - ${APP_NAME}`;
+  }
+  return APP_NAME;
+}
+
 export function AppLayout() {
   const { user, logout } = useAuth();
+  const { pathname } = useLocation();
   const [error, setError] = useState<string | null>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  const title = pageTitle(pathname);
+
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
 
   async function handleLogout() {
     setError(null);
@@ -16,10 +39,19 @@ export function AppLayout() {
     }
   }
 
+  function handleSkip(event: MouseEvent<HTMLAnchorElement>) {
+    // Focus <main> directly instead of changing the URL hash under the router.
+    event.preventDefault();
+    mainRef.current?.focus();
+  }
+
   return (
     <div>
+      <a href="#main-content" className="skip-link" onClick={handleSkip}>
+        Skip to main content
+      </a>
       <header className="app-header">
-        <span className="brand">Slotwise</span>
+        <span className="brand">{APP_NAME}</span>
         <nav aria-label="Main">
           <NavLink to="/services">Services</NavLink>
           <NavLink to="/appointments">My appointments</NavLink>
@@ -41,7 +73,7 @@ export function AppLayout() {
           {error}
         </p>
       )}
-      <main>
+      <main id="main-content" ref={mainRef} tabIndex={-1}>
         <Outlet />
       </main>
     </div>
