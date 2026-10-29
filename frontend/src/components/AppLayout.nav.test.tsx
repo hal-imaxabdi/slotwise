@@ -41,3 +41,28 @@ describe('AppLayout navigation by role', () => {
     expect(document.title).toBe('Staff - Slotwise');
   });
 });
+
+describe('AppLayout closures link', () => {
+  it('hides the Closures link from a customer', () => {
+    renderLayout('customer');
+    expect(screen.queryByRole('link', { name: 'Closures' })).not.toBeInTheDocument();
+  });
+
+  it('shows the Closures link to staff and to an admin', () => {
+    renderLayout('staff');
+    expect(screen.getByRole('link', { name: 'Closures' })).toBeInTheDocument();
+    renderLayout('admin');
+    expect(screen.getAllByRole('link', { name: 'Closures' })).toHaveLength(2);
+  });
+
+  it('highlights only Closures, not Staff, on the closures page', () => {
+    renderLayout('staff', '/staff/unavailable-periods');
+    expect(screen.getByRole('link', { name: 'Closures' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Staff' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('sets the document title for the closures page', () => {
+    renderLayout('staff', '/staff/unavailable-periods');
+    expect(document.title).toBe('Closures - Slotwise');
+  });
+});

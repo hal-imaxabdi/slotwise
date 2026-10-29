@@ -16,6 +16,9 @@ function pageTitle(pathname: string): string {
   if (pathname.startsWith('/services')) {
     return `Services - ${APP_NAME}`;
   }
+  if (pathname.startsWith('/staff/unavailable-periods')) {
+    return `Closures - ${APP_NAME}`;
+  }
   if (pathname.startsWith('/staff')) {
     return `Staff - ${APP_NAME}`;
   }
@@ -63,7 +66,14 @@ export function AppLayout() {
         <nav aria-label="Main">
           <NavLink to="/services">Services</NavLink>
           <NavLink to="/appointments">My appointments</NavLink>
-          {isStaff && <NavLink to="/staff">Staff</NavLink>}
+          {isStaff && (
+            <>
+              <NavLink to="/staff" end>
+                Staff
+              </NavLink>
+              <NavLink to="/staff/unavailable-periods">Closures</NavLink>
+            </>
+          )}
           {isAdmin && (
             <>
               <NavLink to="/admin" end>

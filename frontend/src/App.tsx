@@ -7,6 +7,7 @@ import { AdminPage } from './pages/AdminPage.tsx';
 import { AppointmentsPage } from './pages/AppointmentsPage.tsx';
 import { BookingPage } from './pages/BookingPage.tsx';
 import { BusinessHoursPage } from './pages/BusinessHoursPage.tsx';
+import { ClosuresPage } from './pages/ClosuresPage.tsx';
 import { LoginPage } from './pages/LoginPage.tsx';
 import { ServicesPage } from './pages/ServicesPage.tsx';
 import { StaffPage } from './pages/StaffPage.tsx';
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="appointments" element={<AppointmentsPage />} />
           <Route element={<RequireRole allow={STAFF_ROLES} />}>
             <Route path="staff" element={<StaffPage />} />
+            <Route path="staff/unavailable-periods" element={<ClosuresPage />} />
           </Route>
           <Route element={<RequireRole allow={ADMIN_ROLES} />}>
             <Route path="admin" element={<AdminPage />} />
