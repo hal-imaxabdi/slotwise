@@ -117,7 +117,9 @@ describe('ClosureList delete', () => {
     );
     expect(onRetry).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('group')).toBeNull();
-    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Closures' }));
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Closures' })),
+    );
   });
 
   it('another error keeps the confirm open and refocuses it', async () => {
