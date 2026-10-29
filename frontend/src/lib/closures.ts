@@ -5,3 +5,9 @@ export function jakartaToUtcIso(date: string, minuteOfDay: number): string {
   const midnight = Date.parse(`${date}T00:00:00${JAKARTA_OFFSET}`);
   return new Date(midnight + minuteOfDay * 60_000).toISOString();
 }
+
+/** Minutes after midnight (0-1440) as HH:MM; 1440 shows as 24:00. */
+export function formatMinute(minute: number): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(Math.floor(minute / 60))}:${pad(minute % 60)}`;
+}
