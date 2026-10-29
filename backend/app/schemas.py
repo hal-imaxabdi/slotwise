@@ -100,6 +100,16 @@ class StaffAppointmentListItem(StaffAppointmentOut):
     customer_name: str
 
 
+class StaffCustomerOut(BaseModel):
+    """Minimal customer record for the staff booking picker."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    email: str
+    full_name: str
+
+
 PeriodReason = Annotated[
     str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)
 ]

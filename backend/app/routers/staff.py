@@ -7,7 +7,7 @@ import uuid
 from datetime import date, datetime, time, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.availability import BUSINESS_TZ, ServiceNotFound
@@ -24,21 +24,51 @@ from app.booking import (
 )
 from app.database import get_db
 from app.deps import get_now, require_staff, require_staff_write
-from app.models import Appointment, AppointmentStatus, User, UserSession
+from app.models import Appointment, AppointmentStatus, Role, User, UserSession
 from app.schemas import (
     StaffAppointmentCreateIn,
     StaffAppointmentListItem,
     StaffAppointmentOut,
+    StaffCustomerOut,
 )
 
 router = APIRouter(prefix="/staff", tags=["staff"])
 
 DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
+CUSTOMER_DEFAULT_LIMIT = 20
+CUSTOMER_MAX_LIMIT = 50
+CUSTOMER_QUERY_MAX_LENGTH = 100
 
 
 def _local_day_start_utc(day: date) -> datetime:
     return datetime.combine(day, time.min, tzinfo=BUSINESS_TZ).astimezone(timezone.utc)
+
+
+def _escape_like(text: str) -> str:
+    """Make %, _ and the escape character literal inside a LIKE pattern."""
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+@router.get("/customers", response_model=list[StaffCustomerOut])
+def search_customers(
+    q: str = Query(default="", max_length=CUSTOMER_QUERY_MAX_LENGTH),
+    limit: int = Query(default=CUSTOMER_DEFAULT_LIMIT, ge=1, le=CUSTOMER_MAX_LIMIT),
+    _current: tuple[UserSession, User] = Depends(require_staff),
+    db: Session = Depends(get_db),
+):
+    query = select(User).where(User.role == Role.CUSTOMER.value, User.is_active.is_(True))
+    term = q.strip()
+    if term:
+        pattern = f"%{_escape_like(term)}%"
+        query = query.where(
+            or_(
+                User.email.ilike(pattern, escape="\\"),
+                User.full_name.ilike(pattern, escape="\\"),
+            )
+        )
+    users = db.scalars(query.order_by(User.full_name, User.email).limit(limit)).all()
+    return [StaffCustomerOut.model_validate(user) for user in users]
 
 
 @router.get("/appointments", response_model=list[StaffAppointmentListItem])
