@@ -1,34 +1,78 @@
 # Slotwise
 
-Appointment booking for small businesses. Customers browse services, pick a free time slot, and book, cancel or reschedule. Staff manage appointments and closures. Admins also manage services and business hours.
+Slotwise is a full-stack appointment booking system for small businesses. Customers browse services and book a free time slot. Staff manage the day's schedule. Admins set up services and opening hours.
 
-- Backend: FastAPI, SQLAlchemy, PostgreSQL 17, Alembic (`backend/`)
-- Frontend: Vite, React, TypeScript (`frontend/`)
-- Business timezone: Asia/Jakarta. Times are stored in UTC and booked in 30-minute steps.
-- More detail: `docs/erd.md` and `docs/operations.md`
+It covers the parts of booking software that are easy to get wrong: time zones, 30-minute slot generation from opening hours, closures that block time, conflict-free booking, a 24-hour change rule, and role-based access that is enforced on the server.
 
-## Run locally
+## Features
 
-Settings are read from the repo-root `.env` (never committed; `.env.example` shows the keys).
+| Role | What they can do |
+| --- | --- |
+| **Customer** | Browse services, pick a date and a free time, book, cancel or reschedule, and see their appointment history |
+| **Staff** | Everything a customer can do, plus: view and filter all appointments, cancel or reschedule, mark appointments completed or no-show, book on behalf of a customer, and add or remove closures that block booking |
+| **Admin** | Everything staff can do, plus: create, edit, activate and deactivate services, and set weekly business hours (each day is saved on its own) |
 
-Terminal A, repo root (database):
+How booking behaves:
+
+- Time slots are generated in 30-minute steps from the business hours, minus closures and existing appointments.
+- If two people try to book the same slot, the server rejects the second request with **HTTP 409** and the interface reloads the available times.
+- Customers can cancel or reschedule only if the appointment is at least 24 hours away. The server decides this; the interface only hides what it can.
+- The business time zone is `Asia/Jakarta`. Times are stored in UTC and shown in business time.
+
+## Tech stack
+
+| Part | Technology |
+| --- | --- |
+| Backend | Python, FastAPI, SQLAlchemy, Alembic |
+| Database | PostgreSQL 17 (Docker for local development) |
+| Frontend | React, TypeScript, Vite, React Router |
+| Tests | pytest (backend), Vitest and Testing Library (frontend) |
+| Quality | oxlint with `jsx-a11y` rules, `tsc` type checking |
+
+## Getting started
+
+### What you need
+
+- Python 3.12
+- A recent Node.js LTS release
+- Docker (for the database)
+
+### 1. Get the code and configure it
+
+```bash
+git clone https://github.com/hal-imaxabdi/slotwise.git
+cd slotwise
+cp .env.example .env
+```
+
+Open `.env` and set the values. `.env.example` lists every setting. The `.env` file is never committed.
+
+### 2. Start the database
+
+From the repository root:
 
 ```bash
 docker compose up -d
 docker compose ps
 ```
 
-Terminal B, backend (the prompt must start with `(.venv)`):
+### 3. Start the backend
 
 ```bash
 cd backend
+python3 -m venv .venv
 source .venv/bin/activate
+pip install -r requirements.txt
 alembic upgrade head
 python -m scripts.seed
 uvicorn app.main:app --reload
 ```
 
-Terminal C, frontend:
+The API runs at http://127.0.0.1:8000.
+
+### 4. Start the frontend
+
+In a new terminal:
 
 ```bash
 cd frontend
@@ -36,43 +80,66 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173 (use `localhost`, not `127.0.0.1`).
+Open http://localhost:5173. Use `localhost`, not `127.0.0.1`, because the backend only accepts the origins listed in `ALLOWED_ORIGINS`.
 
-### Logging in
+### Signing in
 
-Demo customer after seeding: `demo.customer@example.com` / `demo-customer-2026`.
+After seeding, a demo customer exists:
 
-Staff and admin accounts are created from the command line (the password is always prompted, never passed as an argument). Run from `backend/` with the venv active:
+```
+demo.customer@example.com
+demo-customer-2026
+```
+
+This account is for local development only. Staff and admin accounts are created from the command line. The password is always asked for interactively and is never passed as an argument:
 
 ```bash
+cd backend
 python -m scripts.create_user --email jane@example.com --name "Jane Doe" --role staff
 python -m scripts.create_user --email root@example.com --name "Root Admin" --role admin
 ```
 
-## Features by role
+## Running the tests
 
-| Role | Pages |
-| --- | --- |
-| Customer | Services, booking a slot, My appointments (cancel, reschedule) |
-| Staff | Staff page (filter and page through all appointments, cancel, reschedule, book on behalf of a customer via the customer picker), Closures (add and remove unavailable periods that block slots) |
-| Admin | Everything staff can do, plus Admin (create, edit and deactivate services) and Business hours (per-day opening hours, each day saved on its own) |
+Backend (the database container must be running; the tests use a separate `*_test` database):
 
-## Frontend
+```bash
+cd backend
+../backend/.venv/bin/pytest
+```
 
-Stack: Vite, React, TypeScript, react-router (import from `react-router`), Vitest with Testing Library, oxlint (with `jsx-a11y`).
+Frontend:
 
-### Layout
+```bash
+cd frontend
+npx tsc -b        # Vitest does not type-check, so run this too
+npm run lint
+npm test
+```
 
-| Path | Purpose |
-| --- | --- |
-| `src/api/` | Typed client, error classes (`ApiError`), error descriptions, one function per endpoint |
-| `src/auth/` | Auth provider, `useAuth`, `RequireAuth` and `RequireRole` route guards |
-| `src/components/` | `AppLayout`, `SlotPicker`, `RescheduleForm`, `StaffAppointmentList`, `StaffBookingForm`, `CustomerPicker`, `ClosureForm`, `ClosureList`, `BusinessHoursDayEditor`, `AdminServiceForm`, `AdminServiceList` |
-| `src/hooks/` | Data hooks: `useServices`, `useMyAppointments`, `useStaffAppointments`, `useUnavailablePeriods`, `useAdminServices`, `useBusinessHours` |
-| `src/lib/` | Date, format, weekday and closure helpers (all business times use Asia/Jakarta) |
-| `src/pages/` | Login, Services, Booking, Appointments, Staff, Closures, Admin, BusinessHours |
+## Project structure
 
-### Routes
+```
+slotwise/
+├── backend/
+│   ├── app/            FastAPI app: routers, booking and slot logic, models, auth
+│   ├── migrations/     Alembic migrations
+│   ├── scripts/        seed data, create users, purge old data
+│   └── tests/          pytest suite
+├── frontend/
+│   └── src/
+│       ├── api/        typed API client, error handling, one function per endpoint
+│       ├── auth/       auth provider and route guards
+│       ├── components/ shared and role-specific components
+│       ├── hooks/      data hooks
+│       ├── lib/        date, format and closure helpers
+│       ├── pages/      one component per route
+│       └── styles/     design system (tokens, base, components, layout, screens)
+├── docs/               database diagram (erd.md) and operations notes (operations.md)
+└── docker-compose.yml  local PostgreSQL
+```
+
+## Routes
 
 | Route | Access |
 | --- | --- |
@@ -81,31 +148,29 @@ Stack: Vite, React, TypeScript, react-router (import from `react-router`), Vites
 | `/staff`, `/staff/unavailable-periods` | staff or admin |
 | `/admin`, `/admin/business-hours` | admin |
 
-### How it talks to the API
+## Security
 
-- The dev server proxies `/api` to `http://127.0.0.1:8000` and strips the prefix, so the browser sees one origin and no CORS is needed.
-- The port is fixed (`strictPort`) because the backend only accepts origins listed in `ALLOWED_ORIGINS`.
 - The session is an HttpOnly cookie. The CSRF token is kept in memory and sent as `X-CSRF-Token` on every non-GET request.
+- Roles are checked on the server for every request. The frontend route guards only decide what to show.
+- Passwords are hashed, and sign-in attempts are throttled.
+- Allowed browser origins are set with `ALLOWED_ORIGINS`.
+- In development the Vite server proxies `/api` to the backend, so the browser sees one origin.
 
-### Checks
+## Frontend notes
 
-Run from `frontend/`:
+**Design system.** Colours, type sizes, spacing, radii and shadows are CSS variables in `frontend/src/styles/tokens.css`. A plain `<button>` is the secondary style, and classes such as `btn--primary` and `btn--danger` add variants. Messages use `alert alert--error|success|warning|info`, and statuses use `status-pill`. There is no UI library and no web font.
 
-```bash
-npx tsc -b        # Vitest does not type-check, so run this too
-npm run lint
-npm test
-```
+**Accessibility.**
 
-Backend tests: from `backend/` with the venv active, `pytest`.
-
-### Accessibility notes
-
-- Skip link and a focusable `<main>`; the document title follows the route.
-- Opening a confirmation, edit or reschedule panel moves focus into it. Closing returns focus to the button that opened it. After a finished action focus goes to the page or section heading.
+- A skip link and a focusable `<main>`. The document title follows the route.
+- Opening a confirmation, edit or reschedule panel moves focus into it. Closing returns focus to the button that opened it.
 - Status and error messages use `role="status"` and `role="alert"`.
-- Controls are real buttons, inputs and links with accessible names. `jsx-a11y` lint rules run with `npm run lint`.
-- A global `:focus-visible` ring (2px blue) shows keyboard focus. Elements focused only by code (`tabindex="-1"`: `<main>`, headings) show no ring.
-- Disabled buttons and `aria-disabled` elements are dimmed with a `not-allowed` cursor.
-- The header and nav wrap on narrow screens so nothing overflows.
-- Slot button borders and hint text meet WCAG contrast for UI components and text.
+- Visible keyboard focus on every control, and colour pairs chosen to meet WCAG AA contrast.
+- Layouts adapt from desktop to mobile widths.
+
+## More documentation
+
+- [`docs/erd.md`](docs/erd.md): database structure
+- [`docs/operations.md`](docs/operations.md): operating and maintenance notes
+
+
