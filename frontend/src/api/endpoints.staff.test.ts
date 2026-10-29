@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { request } from './client.ts';
-import { listStaffAppointments } from './endpoints.ts';
+import { completeAppointment, listStaffAppointments, markNoShow } from './endpoints.ts';
 
 vi.mock('./client.ts');
 
@@ -31,5 +31,19 @@ describe('listStaffAppointments', () => {
     expect(request).toHaveBeenCalledWith('/staff/appointments?limit=21&offset=0', {
       signal: controller.signal,
     });
+  });
+});
+
+describe('staff status changes', () => {
+  it('POSTs to the complete route with the id encoded', async () => {
+    await completeAppointment('a/1');
+    expect(request).toHaveBeenCalledWith('/staff/appointments/a%2F1/complete', {
+      method: 'POST',
+    });
+  });
+
+  it('POSTs to the no-show route', async () => {
+    await markNoShow('a1');
+    expect(request).toHaveBeenCalledWith('/staff/appointments/a1/no-show', { method: 'POST' });
   });
 });

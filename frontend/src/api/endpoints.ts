@@ -105,3 +105,17 @@ export function listStaffAppointments(
   params.set('offset', String(query.offset));
   return request<StaffAppointment[]>(`/staff/appointments?${params.toString()}`, { signal });
 }
+
+// The server's response has the appointment fields but no customer name or email,
+// so callers merge it into the row they already have.
+export function completeAppointment(id: string): Promise<Appointment> {
+  return request<Appointment>(`/staff/appointments/${encodeURIComponent(id)}/complete`, {
+    method: 'POST',
+  });
+}
+
+export function markNoShow(id: string): Promise<Appointment> {
+  return request<Appointment>(`/staff/appointments/${encodeURIComponent(id)}/no-show`, {
+    method: 'POST',
+  });
+}
