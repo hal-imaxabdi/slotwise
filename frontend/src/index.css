@@ -16,7 +16,7 @@ main {
 
 /* Elements focused only by code (skip link target, page heading): no ring. */
 main:focus,
-h1[tabindex='-1']:focus {
+[tabindex='-1']:focus {
   outline: none;
 }
 
@@ -106,4 +106,23 @@ h1[tabindex='-1']:focus {
   display: flex;
   gap: 1rem;
   font-weight: 600;
+}
+
+/* Keyboard focus ring for every interactive element. */
+:focus-visible {
+  outline: 2px solid #1a73e8;
+  outline-offset: 2px;
+}
+
+/* Disabled controls. */
+button:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Reflow: header wraps on narrow screens. */
+.app-header,
+.app-header nav {
+  flex-wrap: wrap;
 }
