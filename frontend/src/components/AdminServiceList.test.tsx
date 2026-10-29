@@ -5,6 +5,7 @@ import {
   activateAdminService,
   deactivateAdminService,
   listAdminServices,
+  updateAdminService,
 } from '../api/endpoints.ts';
 import { ApiError } from '../api/errors.ts';
 import type { AdminService } from '../api/types.ts';
@@ -146,5 +147,67 @@ describe('AdminServiceList', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Server exploded');
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByRole('heading', { name: 'Classic Haircut' })).toBeInTheDocument();
+  });
+});
+
+describe('AdminServiceList (edit)', () => {
+  it('opens the edit form with the current values and moves focus to it', async () => {
+    vi.mocked(listAdminServices).mockResolvedValue([make('a')]);
+    const user = userEvent.setup();
+    render(<AdminServiceList filter="all" />);
+    await user.click(await screen.findByRole('button', { name: 'Edit Classic Haircut' }));
+    expect(screen.getByRole('group', { name: 'Editing Classic Haircut' })).toHaveFocus();
+    expect(screen.getByLabelText('Name')).toHaveValue('Classic Haircut');
+  });
+
+  it('saves, shows an updated notice, refetches and focuses the heading', async () => {
+    vi.mocked(listAdminServices)
+      .mockResolvedValueOnce([make('a')])
+      .mockResolvedValueOnce([make('a', { price_idr: 80000 })]);
+    vi.mocked(updateAdminService).mockResolvedValue(make('a', { price_idr: 80000 }));
+    const user = userEvent.setup();
+    render(<AdminServiceList filter="all" />);
+    await user.click(await screen.findByRole('button', { name: 'Edit Classic Haircut' }));
+    await user.clear(screen.getByLabelText('Price (IDR)'));
+    await user.type(screen.getByLabelText('Price (IDR)'), '80000');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(await screen.findByText('Classic Haircut updated.')).toBeInTheDocument();
+    expect(updateAdminService).toHaveBeenCalledWith('a', { price_idr: 80000 });
+    await waitFor(() => {
+      expect(listAdminServices).toHaveBeenCalledTimes(2);
+    });
+    expect(screen.queryByRole('group', { name: 'Editing Classic Haircut' })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Services', level: 2 })).toHaveFocus();
+    });
+  });
+
+  it('closes on Cancel, refocuses Edit and sends nothing', async () => {
+    vi.mocked(listAdminServices).mockResolvedValue([make('a')]);
+    const user = userEvent.setup();
+    render(<AdminServiceList filter="all" />);
+    await user.click(await screen.findByRole('button', { name: 'Edit Classic Haircut' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('group', { name: 'Editing Classic Haircut' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit Classic Haircut' })).toHaveFocus();
+    expect(updateAdminService).not.toHaveBeenCalled();
+  });
+
+  it('closes the form, shows the not-found alert and refetches on a 404', async () => {
+    vi.mocked(listAdminServices).mockResolvedValue([make('a')]);
+    vi.mocked(updateAdminService).mockRejectedValue(new ApiError(404, 'Service not found'));
+    const user = userEvent.setup();
+    render(<AdminServiceList filter="all" />);
+    await user.click(await screen.findByRole('button', { name: 'Edit Classic Haircut' }));
+    await user.clear(screen.getByLabelText('Name'));
+    await user.type(screen.getByLabelText('Name'), 'Renamed');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(
+      await screen.findByText('Service not found. The list has been refreshed.'),
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(listAdminServices).toHaveBeenCalledTimes(2);
+    });
+    expect(screen.queryByRole('group', { name: /^Editing / })).not.toBeInTheDocument();
   });
 });

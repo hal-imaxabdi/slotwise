@@ -4,6 +4,7 @@ import { activateAdminService, deactivateAdminService } from '../api/endpoints.t
 import { ApiError } from '../api/errors.ts';
 import type { AdminService } from '../api/types.ts';
 import { useAdminServices, type AdminServiceFilter } from '../hooks/useAdminServices.ts';
+import AdminServiceForm from './AdminServiceForm.tsx';
 
 const HEADING_ID = 'admin-services-heading';
 
@@ -19,11 +20,18 @@ type Action = 'activate' | 'deactivate';
 const deactivateButtonId = (id: string) => `admin-service-deactivate-btn-${id}`;
 const activateButtonId = (id: string) => `admin-service-activate-btn-${id}`;
 const confirmGroupId = (id: string) => `admin-service-confirm-${id}`;
+const editButtonId = (id: string) => `admin-service-edit-btn-${id}`;
+const editGroupId = (id: string) => `admin-service-edit-${id}`;
 
 interface ItemProps {
   service: AdminService;
   confirming: boolean;
+  editing: boolean;
   busy: boolean;
+  onEdit: () => void;
+  onCancelEdit: () => void;
+  onSaved: () => void;
+  onNotFound: () => void;
   onActivate: () => void;
   onAskDeactivate: () => void;
   onKeep: () => void;
@@ -33,12 +41,31 @@ interface ItemProps {
 function AdminServiceItem({
   service,
   confirming,
+  editing,
   busy,
+  onEdit,
+  onCancelEdit,
+  onSaved,
+  onNotFound,
   onActivate,
   onAskDeactivate,
   onKeep,
   onConfirmDeactivate,
 }: ItemProps) {
+  if (editing) {
+    return (
+      <li className="admin-service">
+        <div id={editGroupId(service.id)} role="group" tabIndex={-1} aria-label={`Editing ${service.name}`}>
+          <AdminServiceForm
+            service={service}
+            onSaved={onSaved}
+            onNotFound={onNotFound}
+            onCancel={onCancelEdit}
+          />
+        </div>
+      </li>
+    );
+  }
   return (
     <li className="admin-service">
       <h3>{service.name}</h3>
@@ -46,6 +73,15 @@ function AdminServiceItem({
       <p>{`${service.duration_minutes} minutes`}</p>
       <p>{PRICE_FORMAT.format(service.price_idr)}</p>
       <p>{`Status: ${service.is_active ? 'Active' : 'Inactive'}`}</p>
+      <button
+        id={editButtonId(service.id)}
+        type="button"
+        disabled={busy}
+        aria-label={`Edit ${service.name}`}
+        onClick={onEdit}
+      >
+        Edit
+      </button>
       {!service.is_active && (
         <button
           id={activateButtonId(service.id)}
@@ -96,6 +132,7 @@ interface Props {
 export function AdminServiceList({ filter }: Props) {
   const { state, retry, refresh } = useAdminServices(filter);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -179,6 +216,30 @@ export function AdminServiceList({ filter }: Props) {
                 key={service.id}
                 service={service}
                 confirming={confirmId === service.id}
+                editing={editingId === service.id}
+                onEdit={() => {
+                  setActionError(null);
+                  setNotice(null);
+                  setConfirmId(null);
+                  pendingFocus.current = editGroupId(service.id);
+                  setEditingId(service.id);
+                }}
+                onCancelEdit={() => {
+                  pendingFocus.current = editButtonId(service.id);
+                  setEditingId(null);
+                }}
+                onSaved={() => {
+                  setEditingId(null);
+                  setNotice(`${service.name} updated.`);
+                  pendingFocus.current = HEADING_ID;
+                  refresh();
+                }}
+                onNotFound={() => {
+                  setEditingId(null);
+                  setActionError('Service not found. The list has been refreshed.');
+                  pendingFocus.current = HEADING_ID;
+                  refresh();
+                }}
                 busy={submitting}
                 onActivate={() => {
                   void run(service, 'activate');

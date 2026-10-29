@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getSlots, listMyAppointments, listServices, logout, me } from './api/endpoints.ts';
+import { getSlots, listAdminServices, listMyAppointments, listServices, logout, me } from './api/endpoints.ts';
 import { UnauthorizedError } from './api/errors.ts';
 import type { Service } from './api/types.ts';
 import App from './App.tsx';
@@ -104,5 +104,23 @@ describe('App routing', () => {
     expect(
       await screen.findByRole('heading', { name: 'Sign in to Slotwise' }),
     ).toBeInTheDocument();
+  });
+});
+
+describe('App admin routing', () => {
+  it('shows the admin page to an admin at /admin', async () => {
+    vi.mocked(me).mockResolvedValue({ ...AUTH, user: { ...AUTH.user, role: 'admin' } });
+    vi.mocked(listAdminServices).mockResolvedValue([]);
+    renderApp('/admin');
+    expect(await screen.findByRole('heading', { name: 'Admin', level: 1 })).toBeInTheDocument();
+    expect(await screen.findByText('No services match this filter.')).toBeInTheDocument();
+  });
+
+  it('keeps a customer off /admin', async () => {
+    vi.mocked(me).mockResolvedValue(AUTH);
+    renderApp('/admin');
+    expect(await screen.findByRole('heading', { name: 'Not allowed' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Admin', level: 1 })).not.toBeInTheDocument();
+    expect(listAdminServices).not.toHaveBeenCalled();
   });
 });
