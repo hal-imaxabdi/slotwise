@@ -54,7 +54,8 @@ export default function AdminServiceForm({ service, onSaved, onNotFound, onCance
       changes = {};
       if (values.name !== service.name) changes.name = values.name;
       if (values.description !== service.description) changes.description = values.description;
-      if (values.duration_minutes !== service.duration_minutes) changes.duration_minutes = values.duration_minutes;
+      if (values.duration_minutes !== service.duration_minutes)
+        changes.duration_minutes = values.duration_minutes;
       if (values.price_idr !== service.price_idr) changes.price_idr = values.price_idr;
       if (Object.keys(changes).length === 0) {
         setError('No changes to save.');
@@ -90,37 +91,73 @@ export default function AdminServiceForm({ service, onSaved, onNotFound, onCance
   }
 
   return (
-    <form onSubmit={handleSubmit} aria-label={service ? `Edit ${service.name}` : 'Add a service'}>
-      <div>
+    <form
+      className="form-stack"
+      onSubmit={handleSubmit}
+      aria-label={service ? `Edit ${service.name}` : 'Add a service'}
+    >
+      <div className="field">
         <label htmlFor={`${uid}-name`}>Name</label>
-        <input id={`${uid}-name`} ref={nameRef} value={name} maxLength={120} onChange={(e) => setName(e.target.value)} />
+        <input
+          id={`${uid}-name`}
+          ref={nameRef}
+          value={name}
+          maxLength={120}
+          onChange={(e) => setName(e.target.value)}
+        />
       </div>
-      <div>
+      <div className="field">
         <label htmlFor={`${uid}-desc`}>Description</label>
-        <textarea id={`${uid}-desc`} value={description} maxLength={2000} onChange={(e) => setDescription(e.target.value)} />
+        <textarea
+          id={`${uid}-desc`}
+          value={description}
+          maxLength={2000}
+          onChange={(e) => setDescription(e.target.value)}
+        />
       </div>
-      <div>
-        <label htmlFor={`${uid}-duration`}>Duration</label>
-        <select id={`${uid}-duration`} value={duration} onChange={(e) => setDuration(e.target.value)}>
-          {DURATIONS.map((m) => (
-            <option key={m} value={m}>{`${m} minutes`}</option>
-          ))}
-        </select>
+      <div className="form-grid">
+        <div className="field">
+          <label htmlFor={`${uid}-duration`}>Duration</label>
+          <select
+            id={`${uid}-duration`}
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+          >
+            {DURATIONS.map((m) => (
+              <option key={m} value={m}>{`${m} minutes`}</option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor={`${uid}-price`}>Price (IDR)</label>
+          <input
+            id={`${uid}-price`}
+            inputMode="numeric"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+        </div>
       </div>
-      <div>
-        <label htmlFor={`${uid}-price`}>Price (IDR)</label>
-        <input id={`${uid}-price`} inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} />
-      </div>
-      {error && <p role="alert">{error}</p>}
-      {status && <p role="status">{status}</p>}
-      <button type="submit" disabled={submitting}>
-        {submitting ? 'Saving…' : service ? 'Save changes' : 'Add service'}
-      </button>
-      {onCancel && (
-        <button type="button" onClick={onCancel} disabled={submitting}>
-          Cancel
-        </button>
+      {error && (
+        <p role="alert" className="alert alert--error">
+          {error}
+        </p>
       )}
+      {status && (
+        <p role="status" className="alert alert--success">
+          {status}
+        </p>
+      )}
+      <div className="form-actions">
+        <button type="submit" className="btn--primary" disabled={submitting}>
+          {submitting ? 'Saving…' : service ? 'Save changes' : 'Add service'}
+        </button>
+        {onCancel && (
+          <button type="button" onClick={onCancel} disabled={submitting}>
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   );
 }

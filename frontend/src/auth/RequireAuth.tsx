@@ -6,11 +6,15 @@ export function RequireAuth() {
   const location = useLocation();
 
   if (auth.status === 'loading') {
-    return <p role="status">Loading...</p>;
+    return (
+      <p role="status" className="loading loading--page">
+        Loading...
+      </p>
+    );
   }
   if (auth.status === 'error') {
     return (
-      <div role="alert">
+      <div role="alert" className="alert alert--error">
         <p>{auth.error ?? 'Could not load your session.'}</p>
         <button type="button" onClick={auth.retry}>
           Try again

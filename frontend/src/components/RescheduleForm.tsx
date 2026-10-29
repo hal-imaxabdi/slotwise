@@ -5,7 +5,6 @@ import { ApiError } from '../api/errors.ts';
 import type { Appointment } from '../api/types.ts';
 import { formatAppointmentRange, todayInJakarta } from '../lib/dates.ts';
 import { SlotPicker } from './SlotPicker.tsx';
-import './RescheduleForm.css';
 
 const JAKARTA_DATE = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Asia/Jakarta',
@@ -71,8 +70,7 @@ export function RescheduleForm({
 
   const durationMs = Date.parse(appointment.ends_at) - Date.parse(appointment.starts_at);
   const dateUsable = date !== '' && date >= minDate;
-  const unchanged =
-    selected !== null && Date.parse(selected) === Date.parse(appointment.starts_at);
+  const unchanged = selected !== null && Date.parse(selected) === Date.parse(appointment.starts_at);
   const dateId = `reschedule-date-${appointment.id}`;
 
   function handleDateChange(value: string) {
@@ -118,8 +116,8 @@ export function RescheduleForm({
   return (
     <div role="group" aria-label={`Reschedule ${serviceName}`} className="reschedule">
       <p>{`Current time: ${formatAppointmentRange(appointment.starts_at, appointment.ends_at)}`}</p>
-      <div>
-        <label htmlFor={dateId}>New date</label>{' '}
+      <div className="field date-field">
+        <label htmlFor={dateId}>New date</label>
         <input
           ref={dateRef}
           id={dateId}
@@ -145,31 +143,36 @@ export function RescheduleForm({
           }}
         />
       ) : (
-        <p>Choose today or a later date to see available times.</p>
+        <p className="hint">Choose today or a later date to see available times.</p>
       )}
-      {error !== null && <p role="alert">{error}</p>}
+      {error !== null && (
+        <p role="alert" className="alert alert--error">
+          {error}
+        </p>
+      )}
       {selected !== null && unchanged && (
-        <p>That is already your current time. Choose a different one.</p>
+        <p className="alert alert--warning">
+          That is already your current time. Choose a different one.
+        </p>
       )}
       {selected !== null && !unchanged && (
-        <>
-          <p>{`New time: ${formatAppointmentRange(selected, addMs(selected, durationMs))}`}</p>
-          <div>
-            <button
-              ref={confirmRef}
-              type="button"
-              disabled={submitting}
-              onClick={() => {
-                void handleConfirm();
-              }}
-            >
-              {submitting ? 'Rescheduling...' : 'Confirm new time'}
-            </button>
-          </div>
-        </>
+        <p className="appt-when">{`New time: ${formatAppointmentRange(selected, addMs(selected, durationMs))}`}</p>
       )}
-      <div>
-        <button type="button" disabled={submitting} onClick={onClose}>
+      <div className="btn-row">
+        {selected !== null && !unchanged && (
+          <button
+            ref={confirmRef}
+            type="button"
+            className="btn--primary"
+            disabled={submitting}
+            onClick={() => {
+              void handleConfirm();
+            }}
+          >
+            {submitting ? 'Rescheduling...' : 'Confirm new time'}
+          </button>
+        )}
+        <button type="button" className="btn--quiet" disabled={submitting} onClick={onClose}>
           Keep current time
         </button>
       </div>

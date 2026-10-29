@@ -87,15 +87,27 @@ export function ClosureList({ state, onRetry, onLoadMore, onRemove }: Props) {
   }
 
   return (
-    <section aria-labelledby={HEADING_ID}>
-      <h2 id={HEADING_ID} tabIndex={-1}>
+    <section aria-labelledby={HEADING_ID} className="closures-list-section">
+      <h2 id={HEADING_ID} tabIndex={-1} className="section-title">
         Closures
       </h2>
-      {notice !== null && <p role="status">{notice}</p>}
-      {actionError !== null && <p role="alert">{actionError}</p>}
-      {state.kind === 'loading' && <p role="status">Loading closures…</p>}
+      {notice !== null && (
+        <p role="status" className="alert alert--success">
+          {notice}
+        </p>
+      )}
+      {actionError !== null && (
+        <p role="alert" className="alert alert--error">
+          {actionError}
+        </p>
+      )}
+      {state.kind === 'loading' && (
+        <p role="status" className="loading">
+          Loading closures…
+        </p>
+      )}
       {state.kind === 'error' && (
-        <div role="alert">
+        <div role="alert" className="alert alert--error">
           <p>{state.message}</p>
           <button type="button" onClick={onRetry}>
             Try again
@@ -104,7 +116,10 @@ export function ClosureList({ state, onRetry, onLoadMore, onRemove }: Props) {
       )}
       {state.kind === 'ready' &&
         (state.periods.length === 0 ? (
-          <p>No upcoming closures.</p>
+          <div className="empty-state">
+            <p className="empty-title">No upcoming closures.</p>
+            <p>Add one on the left to block booking for a period.</p>
+          </div>
         ) : (
           <>
             <ul className="closure-list">
@@ -113,10 +128,13 @@ export function ClosureList({ state, onRetry, onLoadMore, onRemove }: Props) {
                 const confirming = confirmId === period.id;
                 return (
                   <li key={period.id}>
-                    <p>{formatAppointmentRange(period.starts_at, period.ends_at)}</p>
-                    <p>{period.reason}</p>
+                    <p className="closure-when">
+                      {formatAppointmentRange(period.starts_at, period.ends_at)}
+                    </p>
+                    <p className="closure-reason">{period.reason}</p>
                     {!confirming && (
                       <button
+                        className="btn--sm"
                         id={deleteButtonId(period.id)}
                         type="button"
                         disabled={submitting}
@@ -133,38 +151,47 @@ export function ClosureList({ state, onRetry, onLoadMore, onRemove }: Props) {
                     )}
                     {confirming && (
                       <div
+                        className="confirm-panel"
                         id={confirmGroupId(period.id)}
                         role="group"
                         tabIndex={-1}
                         aria-label={`Confirm deletion of closure: ${label}`}
                       >
                         <p>Delete this closure? Booking will be possible again for this period.</p>
-                        <button
-                          type="button"
-                          disabled={submitting}
-                          onClick={() => {
-                            void remove(period);
-                          }}
-                        >
-                          {submitting ? 'Deleting…' : 'Yes, delete closure'}
-                        </button>{' '}
-                        <button
-                          type="button"
-                          disabled={submitting}
-                          onClick={() => {
-                            pendingFocus.current = deleteButtonId(period.id);
-                            setConfirmId(null);
-                          }}
-                        >
-                          Keep closure
-                        </button>
+                        <div className="btn-row">
+                          <button
+                            type="button"
+                            className="btn--danger btn--sm"
+                            disabled={submitting}
+                            onClick={() => {
+                              void remove(period);
+                            }}
+                          >
+                            {submitting ? 'Deleting…' : 'Yes, delete closure'}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn--sm"
+                            disabled={submitting}
+                            onClick={() => {
+                              pendingFocus.current = deleteButtonId(period.id);
+                              setConfirmId(null);
+                            }}
+                          >
+                            Keep closure
+                          </button>
+                        </div>
                       </div>
                     )}
                   </li>
                 );
               })}
             </ul>
-            {state.loadMoreError !== null && <p role="alert">{state.loadMoreError}</p>}
+            {state.loadMoreError !== null && (
+              <p role="alert" className="alert alert--error">
+                {state.loadMoreError}
+              </p>
+            )}
             {state.hasMore && (
               <button type="button" aria-disabled={state.loadingMore} onClick={handleLoadMore}>
                 {state.loadingMore ? 'Loading more…' : 'Load more'}

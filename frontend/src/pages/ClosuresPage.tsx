@@ -10,10 +10,18 @@ export function ClosuresPage() {
 
   return (
     <div>
-      <h1>Closures</h1>
-      <p>Closures block booking for everyone. The list shows closures from today onward.</p>
-      <ClosureForm onCreate={create} />
-      <ClosureList state={state} onRetry={retry} onLoadMore={loadMore} onRemove={remove} />
+      <div className="page-header">
+        <div>
+          <h1>Closures</h1>
+          <p className="page-lead">
+            Closures block booking for everyone. The list shows closures from today onward.
+          </p>
+        </div>
+      </div>
+      <div className="closures-layout">
+        <ClosureForm onCreate={create} />
+        <ClosureList state={state} onRetry={retry} onLoadMore={loadMore} onRemove={remove} />
+      </div>
     </div>
   );
 }

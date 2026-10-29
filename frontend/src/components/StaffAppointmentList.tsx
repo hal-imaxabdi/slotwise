@@ -5,8 +5,8 @@ import { ApiError } from '../api/errors.ts';
 import type { Appointment, AppointmentStatus, StaffAppointment } from '../api/types.ts';
 import { useStaffAppointments, type StaffFilters } from '../hooks/useStaffAppointments.ts';
 import { formatAppointmentRange } from '../lib/dates.ts';
+import { CalendarIcon } from './icons.tsx';
 import { RescheduleForm } from './RescheduleForm.tsx';
-import './StaffAppointmentList.css';
 
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
   booked: 'Booked',
@@ -113,18 +113,32 @@ function StaffAppointmentItem({
   const confirmKind: ConfirmKind | null = open !== null && open !== 'reschedule' ? open : null;
   return (
     <li className="staff-appointment">
-      <h3>{who}</h3>
-      <p>{appointment.customer_email}</p>
-      <p>{serviceName}</p>
-      <p>{when}</p>
-      <p>{`Status: ${STATUS_LABELS[appointment.status]}`}</p>
-      {appointment.notes !== '' && <p>{`Notes: ${appointment.notes}`}</p>}
+      <div className="staff-top">
+        <div className="staff-who">
+          <h3>{who}</h3>
+          <p>{appointment.customer_email}</p>
+        </div>
+        <div className="staff-what">
+          <p>{serviceName}</p>
+          <p className="appt-when">
+            <CalendarIcon className="icon" />
+            {when}
+          </p>
+          {appointment.notes !== '' && (
+            <p className="appt-notes">{`Notes: ${appointment.notes}`}</p>
+          )}
+        </div>
+        <p className={`status-pill status-pill--${appointment.status}`}>
+          {`Status: ${STATUS_LABELS[appointment.status]}`}
+        </p>
+      </div>
       {isBooked && open === null && (
-        <div>
+        <div className="item-actions">
           {started && (
             <>
               <button
                 id={buttonId('complete', appointment.id)}
+                className="btn--primary btn--sm"
                 type="button"
                 disabled={busy}
                 aria-label={`Complete appointment for ${who} on ${when}`}
@@ -133,9 +147,10 @@ function StaffAppointmentItem({
                 }}
               >
                 Complete
-              </button>{' '}
+              </button>
               <button
                 id={buttonId('no_show', appointment.id)}
+                className="btn--sm"
                 type="button"
                 disabled={busy}
                 aria-label={`Mark no-show for ${who} on ${when}`}
@@ -144,13 +159,14 @@ function StaffAppointmentItem({
                 }}
               >
                 Mark no-show
-              </button>{' '}
+              </button>
             </>
           )}
           {canReschedule && (
             <>
               <button
                 id={buttonId('reschedule', appointment.id)}
+                className="btn--sm"
                 type="button"
                 disabled={busy}
                 aria-label={`Reschedule appointment for ${who} on ${when}`}
@@ -159,11 +175,12 @@ function StaffAppointmentItem({
                 }}
               >
                 Reschedule
-              </button>{' '}
+              </button>
             </>
           )}
           <button
             id={buttonId('cancel', appointment.id)}
+            className="btn--quiet btn--sm"
             type="button"
             disabled={busy}
             aria-label={`Cancel appointment for ${who} on ${when}`}
@@ -177,30 +194,37 @@ function StaffAppointmentItem({
       )}
       {isBooked && confirmKind !== null && (
         <div
+          className="confirm-panel"
           id={confirmGroupId(appointment.id)}
           role="group"
           tabIndex={-1}
           aria-label={`${CONFIRM[confirmKind].group} ${who}`}
         >
           <p>{CONFIRM[confirmKind].question}</p>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              onConfirm(confirmKind);
-            }}
-          >
-            {busy ? CONFIRM[confirmKind].busy : CONFIRM[confirmKind].yes}
-          </button>{' '}
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              onKeep(confirmKind);
-            }}
-          >
-            {CONFIRM[confirmKind].keep}
-          </button>
+          <div className="btn-row">
+            <button
+              type="button"
+              className={
+                confirmKind === 'complete' ? 'btn--primary btn--sm' : 'btn--danger btn--sm'
+              }
+              disabled={busy}
+              onClick={() => {
+                onConfirm(confirmKind);
+              }}
+            >
+              {busy ? CONFIRM[confirmKind].busy : CONFIRM[confirmKind].yes}
+            </button>
+            <button
+              type="button"
+              className="btn--sm"
+              disabled={busy}
+              onClick={() => {
+                onKeep(confirmKind);
+              }}
+            >
+              {CONFIRM[confirmKind].keep}
+            </button>
+          </div>
         </div>
       )}
       {isBooked && open === 'reschedule' && reschedulePanel}
@@ -351,14 +375,26 @@ export function StaffAppointmentList({ filters, serviceNames }: Props) {
 
   return (
     <section aria-labelledby={HEADING_ID}>
-      <h2 id={HEADING_ID} tabIndex={-1}>
+      <h2 id={HEADING_ID} tabIndex={-1} className="section-title">
         Appointments
       </h2>
-      {notice !== null && <p role="status">{notice}</p>}
-      {actionError !== null && <p role="alert">{actionError}</p>}
-      {state.kind === 'loading' && <p role="status">Loading...</p>}
+      {notice !== null && (
+        <p role="status" className="alert alert--success">
+          {notice}
+        </p>
+      )}
+      {actionError !== null && (
+        <p role="alert" className="alert alert--error">
+          {actionError}
+        </p>
+      )}
+      {state.kind === 'loading' && (
+        <p role="status" className="loading">
+          Loading...
+        </p>
+      )}
       {state.kind === 'error' && (
-        <div role="alert">
+        <div role="alert" className="alert alert--error">
           <p>{state.message}</p>
           <button type="button" onClick={retry}>
             Try again
@@ -368,19 +404,32 @@ export function StaffAppointmentList({ filters, serviceNames }: Props) {
       {state.kind === 'ready' && (
         <>
           {state.appointments.length === 0 ? (
-            <p>
-              {page === 0 ? 'No appointments match these filters.' : 'No more appointments.'}
-            </p>
+            <div className="empty-state">
+              <p className="empty-title">
+                {page === 0 ? 'No appointments match these filters.' : 'No more appointments.'}
+              </p>
+              {page === 0 && <p>Try a wider date range or a different status.</p>}
+            </div>
           ) : (
             <ul className="staff-appointment-list">{state.appointments.map(renderItem)}</ul>
           )}
           {(page > 0 || state.hasMore) && (
             <nav aria-label="Appointment pages" className="staff-pagination">
-              <button type="button" disabled={page === 0 || busy} onClick={() => move(page - 1)}>
+              <button
+                type="button"
+                className="btn--sm"
+                disabled={page === 0 || busy}
+                onClick={() => move(page - 1)}
+              >
                 Previous
               </button>
               <span>{`Page ${page + 1}`}</span>
-              <button type="button" disabled={!state.hasMore || busy} onClick={() => move(page + 1)}>
+              <button
+                type="button"
+                className="btn--sm"
+                disabled={!state.hasMore || busy}
+                onClick={() => move(page + 1)}
+              >
                 Next
               </button>
             </nav>

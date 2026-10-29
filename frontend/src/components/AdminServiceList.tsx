@@ -55,7 +55,13 @@ function AdminServiceItem({
   if (editing) {
     return (
       <li className="admin-service">
-        <div id={editGroupId(service.id)} role="group" tabIndex={-1} aria-label={`Editing ${service.name}`}>
+        <div
+          className="panel"
+          id={editGroupId(service.id)}
+          role="group"
+          tabIndex={-1}
+          aria-label={`Editing ${service.name}`}
+        >
           <AdminServiceForm
             service={service}
             onSaved={onSaved}
@@ -67,57 +73,76 @@ function AdminServiceItem({
     );
   }
   return (
-    <li className="admin-service">
-      <h3>{service.name}</h3>
-      {service.description !== '' && <p>{service.description}</p>}
-      <p>{`${service.duration_minutes} minutes`}</p>
-      <p>{PRICE_FORMAT.format(service.price_idr)}</p>
-      <p>{`Status: ${service.is_active ? 'Active' : 'Inactive'}`}</p>
-      <button
-        id={editButtonId(service.id)}
-        type="button"
-        disabled={busy}
-        aria-label={`Edit ${service.name}`}
-        onClick={onEdit}
-      >
-        Edit
-      </button>
-      {!service.is_active && (
+    <li className={service.is_active ? 'admin-service' : 'admin-service is-inactive'}>
+      <div className="admin-service-main">
+        <h3>{service.name}</h3>
+        <p className={`status-pill status-pill--${service.is_active ? 'active' : 'inactive'}`}>
+          {`Status: ${service.is_active ? 'Active' : 'Inactive'}`}
+        </p>
+      </div>
+      {service.description !== '' && <p className="hint">{service.description}</p>}
+      <div className="admin-service-meta">
+        <p>{`${service.duration_minutes} minutes`}</p>
+        <p>{PRICE_FORMAT.format(service.price_idr)}</p>
+      </div>
+      <div className="item-actions">
         <button
-          id={activateButtonId(service.id)}
+          id={editButtonId(service.id)}
+          className="btn--sm"
           type="button"
           disabled={busy}
-          aria-label={`Activate ${service.name}`}
-          onClick={onActivate}
+          aria-label={`Edit ${service.name}`}
+          onClick={onEdit}
         >
-          Activate
+          Edit
         </button>
-      )}
-      {service.is_active && !confirming && (
-        <button
-          id={deactivateButtonId(service.id)}
-          type="button"
-          disabled={busy}
-          aria-label={`Deactivate ${service.name}`}
-          onClick={onAskDeactivate}
-        >
-          Deactivate
-        </button>
-      )}
+        {!service.is_active && (
+          <button
+            id={activateButtonId(service.id)}
+            className="btn--primary btn--sm"
+            type="button"
+            disabled={busy}
+            aria-label={`Activate ${service.name}`}
+            onClick={onActivate}
+          >
+            Activate
+          </button>
+        )}
+        {service.is_active && !confirming && (
+          <button
+            id={deactivateButtonId(service.id)}
+            className="btn--sm"
+            type="button"
+            disabled={busy}
+            aria-label={`Deactivate ${service.name}`}
+            onClick={onAskDeactivate}
+          >
+            Deactivate
+          </button>
+        )}
+      </div>
       {service.is_active && confirming && (
         <div
+          className="confirm-panel"
           id={confirmGroupId(service.id)}
           role="group"
           tabIndex={-1}
           aria-label={`Confirm deactivation of ${service.name}`}
         >
           <p>Deactivate this service? It will stop appearing for new bookings.</p>
-          <button type="button" disabled={busy} onClick={onConfirmDeactivate}>
-            {busy ? 'Deactivating...' : 'Yes, deactivate service'}
-          </button>{' '}
-          <button type="button" disabled={busy} onClick={onKeep}>
-            Keep service
-          </button>
+          <div className="btn-row">
+            <button
+              type="button"
+              className="btn--danger btn--sm"
+              disabled={busy}
+              onClick={onConfirmDeactivate}
+            >
+              {busy ? 'Deactivating...' : 'Yes, deactivate service'}
+            </button>
+            <button type="button" className="btn--sm" disabled={busy} onClick={onKeep}>
+              Keep service
+            </button>
+          </div>
         </div>
       )}
     </li>
@@ -192,14 +217,26 @@ export function AdminServiceList({ filter }: Props) {
 
   return (
     <section aria-labelledby={HEADING_ID}>
-      <h2 id={HEADING_ID} tabIndex={-1}>
+      <h2 id={HEADING_ID} tabIndex={-1} className="section-title">
         Services
       </h2>
-      {notice !== null && <p role="status">{notice}</p>}
-      {actionError !== null && <p role="alert">{actionError}</p>}
-      {state.kind === 'loading' && <p role="status">Loading...</p>}
+      {notice !== null && (
+        <p role="status" className="alert alert--success">
+          {notice}
+        </p>
+      )}
+      {actionError !== null && (
+        <p role="alert" className="alert alert--error">
+          {actionError}
+        </p>
+      )}
+      {state.kind === 'loading' && (
+        <p role="status" className="loading">
+          Loading...
+        </p>
+      )}
       {state.kind === 'error' && (
-        <div role="alert">
+        <div role="alert" className="alert alert--error">
           <p>{state.message}</p>
           <button type="button" onClick={retry}>
             Try again
@@ -208,7 +245,10 @@ export function AdminServiceList({ filter }: Props) {
       )}
       {state.kind === 'ready' &&
         (state.services.length === 0 ? (
-          <p>No services match this filter.</p>
+          <div className="empty-state">
+            <p className="empty-title">No services match this filter.</p>
+            <p>Change the filter or add a new service.</p>
+          </div>
         ) : (
           <ul className="admin-service-list">
             {state.services.map((service) => (

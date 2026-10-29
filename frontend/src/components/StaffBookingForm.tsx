@@ -94,7 +94,7 @@ export function StaffBookingForm({ services, onBooked }: StaffBookingFormProps) 
   };
 
   return (
-    <section aria-labelledby="staff-book-heading">
+    <section aria-labelledby="staff-book-heading" className="card staff-book">
       <h2 id="staff-book-heading">Book for a customer</h2>
       <h3>1. Customer</h3>
       <CustomerPicker
@@ -102,17 +102,20 @@ export function StaffBookingForm({ services, onBooked }: StaffBookingFormProps) 
         onSelect={handleSelectCustomer}
         disabled={submitting}
       />
-      <p>{customer === null ? 'No customer chosen.' : `Customer: ${customer.full_name}`}</p>
+      <p className="chosen">
+        {customer === null ? 'No customer chosen.' : `Customer: ${customer.full_name}`}
+      </p>
       <h3>2. Service and time</h3>
       <form
+        className="form-stack"
         aria-label="Booking details"
         onSubmit={(event) => {
           event.preventDefault();
           void handleSubmit();
         }}
       >
-        <div>
-          <label htmlFor="staff-book-service">Service</label>{' '}
+        <div className="field">
+          <label htmlFor="staff-book-service">Service</label>
           <select
             id="staff-book-service"
             value={serviceId}
@@ -127,8 +130,8 @@ export function StaffBookingForm({ services, onBooked }: StaffBookingFormProps) 
             ))}
           </select>
         </div>
-        <div>
-          <label htmlFor="staff-book-date">Date</label>{' '}
+        <div className="field date-field">
+          <label htmlFor="staff-book-date">Date</label>
           <input
             id="staff-book-date"
             type="date"
@@ -138,8 +141,12 @@ export function StaffBookingForm({ services, onBooked }: StaffBookingFormProps) 
             onChange={handleDateChange}
           />
         </div>
-        {date === '' && <p>Choose a date to see available times.</p>}
-        {date !== '' && !dateOk && <p role="alert">Choose today or a later date.</p>}
+        {date === '' && <p className="hint">Choose a date to see available times.</p>}
+        {date !== '' && !dateOk && (
+          <p role="alert" className="alert alert--warning">
+            Choose today or a later date.
+          </p>
+        )}
         {service !== undefined && dateOk && (
           <SlotPicker
             key={`${service.id}:${date}:${refreshKey}`}
@@ -150,8 +157,8 @@ export function StaffBookingForm({ services, onBooked }: StaffBookingFormProps) 
             disabled={submitting}
           />
         )}
-        {slot !== null && <p>{`Selected time: ${slot.local_time}`}</p>}
-        <div>
+        {slot !== null && <p className="chosen">{`Selected time: ${slot.local_time}`}</p>}
+        <div className="field">
           <label htmlFor="staff-book-notes">Notes (optional)</label>
           <textarea
             id="staff-book-notes"
@@ -163,13 +170,27 @@ export function StaffBookingForm({ services, onBooked }: StaffBookingFormProps) 
               setNotes(event.target.value);
             }}
           />
-          <p>{`${notes.length}/${NOTES_MAX}`}</p>
+          <p className="char-count">{`${notes.length}/${NOTES_MAX}`}</p>
         </div>
-        {error !== null && <p role="alert">{error}</p>}
-        {notice !== null && <p role="status">{notice}</p>}
-        <button type="submit" disabled={submitting || customer === null || slot === null}>
-          {submitting ? 'Booking...' : 'Book appointment'}
-        </button>
+        {error !== null && (
+          <p role="alert" className="alert alert--error">
+            {error}
+          </p>
+        )}
+        {notice !== null && (
+          <p role="status" className="alert alert--success">
+            {notice}
+          </p>
+        )}
+        <div className="form-actions">
+          <button
+            type="submit"
+            className="btn--primary"
+            disabled={submitting || customer === null || slot === null}
+          >
+            {submitting ? 'Booking...' : 'Book appointment'}
+          </button>
+        </div>
       </form>
     </section>
   );

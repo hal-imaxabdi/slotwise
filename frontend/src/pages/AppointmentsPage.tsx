@@ -4,11 +4,11 @@ import { describeApiError } from '../api/describeError.ts';
 import { cancelAppointment } from '../api/endpoints.ts';
 import { ApiError } from '../api/errors.ts';
 import type { Appointment, AppointmentStatus } from '../api/types.ts';
+import { CalendarIcon } from '../components/icons.tsx';
 import { RescheduleForm } from '../components/RescheduleForm.tsx';
 import { useMyAppointments } from '../hooks/useMyAppointments.ts';
 import { useServices } from '../hooks/useServices.ts';
 import { canChangeAppointment, formatAppointmentRange } from '../lib/dates.ts';
-import './AppointmentsPage.css';
 
 const BUSINESS_TIMEZONE = 'Asia/Jakarta';
 const CHANGE_HINT =
@@ -71,15 +71,23 @@ function AppointmentItem({
   const when = formatAppointmentRange(appointment.starts_at, appointment.ends_at);
   const hintId = `change-hint-${appointment.id}`;
   return (
-    <li className="appointment">
-      <h3>{serviceName}</h3>
-      <p>{when}</p>
-      <p>{`Status: ${STATUS_LABELS[appointment.status]}`}</p>
-      {appointment.notes !== '' && <p>{`Notes: ${appointment.notes}`}</p>}
+    <li className={`appointment appointment--${appointment.status}`}>
+      <div className="appointment-head">
+        <h3>{serviceName}</h3>
+        <p className={`status-pill status-pill--${appointment.status}`}>
+          {`Status: ${STATUS_LABELS[appointment.status]}`}
+        </p>
+      </div>
+      <p className="appt-when">
+        <CalendarIcon className="icon" />
+        {when}
+      </p>
+      {appointment.notes !== '' && <p className="appt-notes">{`Notes: ${appointment.notes}`}</p>}
       {showActions && !confirming && !rescheduling && (
-        <>
+        <div className="item-actions">
           <button
             id={cancelButtonId(appointment.id)}
+            className="btn--sm"
             type="button"
             disabled={!allowed || busy}
             aria-label={`Cancel ${serviceName} on ${when}`}
@@ -87,10 +95,11 @@ function AppointmentItem({
             onClick={onAsk}
           >
             Cancel
-          </button>{' '}
+          </button>
           {canReschedule && (
             <button
               id={rescheduleButtonId(appointment.id)}
+              className="btn--sm"
               type="button"
               disabled={!allowed || busy}
               aria-label={`Reschedule ${serviceName} on ${when}`}
@@ -105,22 +114,30 @@ function AppointmentItem({
               {CHANGE_HINT}
             </p>
           )}
-        </>
+        </div>
       )}
       {showActions && confirming && (
         <div
+          className="confirm-panel"
           id={confirmGroupId(appointment.id)}
           role="group"
           tabIndex={-1}
           aria-label={`Confirm cancellation of ${serviceName}`}
         >
           <p>Cancel this appointment?</p>
-          <button type="button" disabled={busy} onClick={onConfirm}>
-            {busy ? 'Cancelling...' : 'Yes, cancel appointment'}
-          </button>{' '}
-          <button type="button" disabled={busy} onClick={onKeep}>
-            Keep appointment
-          </button>
+          <div className="btn-row">
+            <button
+              type="button"
+              className="btn--danger btn--sm"
+              disabled={busy}
+              onClick={onConfirm}
+            >
+              {busy ? 'Cancelling...' : 'Yes, cancel appointment'}
+            </button>
+            <button type="button" className="btn--sm" disabled={busy} onClick={onKeep}>
+              Keep appointment
+            </button>
+          </div>
         </div>
       )}
       {showActions && rescheduling && reschedulePanel}
@@ -157,7 +174,7 @@ export function AppointmentsPage() {
     const message =
       sState.kind === 'error' ? sState.message : aState.kind === 'error' ? aState.message : '';
     return (
-      <div role="alert">
+      <div role="alert" className="alert alert--error">
         <p>{message}</p>
         <button
           type="button"
@@ -172,7 +189,11 @@ export function AppointmentsPage() {
     );
   }
   if (sState.kind === 'loading' || aState.kind === 'loading') {
-    return <p role="status">Loading...</p>;
+    return (
+      <p role="status" className="loading">
+        Loading...
+      </p>
+    );
   }
 
   const names = new Map<string, string>(
@@ -305,37 +326,54 @@ export function AppointmentsPage() {
 
   return (
     <section>
-      <h1 id={HEADING_ID} tabIndex={-1}>
-        My appointments
-      </h1>
-      {notice !== null && <p role="status">{notice}</p>}
-      {actionError !== null && <p role="alert">{actionError}</p>}
+      <div className="page-header">
+        <div>
+          <h1 id={HEADING_ID} tabIndex={-1}>
+            My appointments
+          </h1>
+          <p className="page-lead">Your upcoming bookings and your history.</p>
+        </div>
+        <Link to="/services" className="btn btn--primary">
+          Book a service
+        </Link>
+      </div>
+      {notice !== null && (
+        <p role="status" className="alert alert--success">
+          {notice}
+        </p>
+      )}
+      {actionError !== null && (
+        <p role="alert" className="alert alert--error">
+          {actionError}
+        </p>
+      )}
       {appointments.length === 0 ? (
-        <>
-          <p>You have no appointments yet.</p>
-          <p>
-            <Link to="/services">Browse services</Link>
-          </p>
-        </>
+        <div className="empty-state">
+          <p className="empty-title">You have no appointments yet.</p>
+          <p>Pick a service and choose a time that works for you.</p>
+          <Link to="/services" className="btn btn--primary">
+            Browse services
+          </Link>
+        </div>
       ) : (
         <>
-          <section aria-labelledby="upcoming-heading">
+          <section aria-labelledby="upcoming-heading" className="appointments-section">
             <h2 id="upcoming-heading">Upcoming</h2>
             {upcoming.length === 0 ? (
-              <p>No upcoming appointments.</p>
+              <p className="hint">No upcoming appointments.</p>
             ) : (
               <ul className="appointment-list">{upcoming.map((a) => renderItem(a, true))}</ul>
             )}
           </section>
           {history.length > 0 && (
-            <section aria-labelledby="history-heading">
+            <section aria-labelledby="history-heading" className="appointments-section">
               <h2 id="history-heading">Past and cancelled</h2>
               <ul className="appointment-list">{history.map((a) => renderItem(a, false))}</ul>
             </section>
           )}
         </>
       )}
-      <p>{`Times are shown in ${BUSINESS_TIMEZONE} time.`}</p>
+      <p className="tz-note">{`Times are shown in ${BUSINESS_TIMEZONE} time.`}</p>
     </section>
   );
 }

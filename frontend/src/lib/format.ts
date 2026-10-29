@@ -14,3 +14,16 @@ export function formatDuration(minutes: number): string {
   }
   return `${hours} h ${rest} min`;
 }
+
+const LONG_DATE = new Intl.DateTimeFormat('en-US', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+// Formats a plain calendar date ("2026-10-29") without any timezone shift.
+export function formatLongDate(isoDate: string): string {
+  return LONG_DATE.format(new Date(`${isoDate}T00:00:00Z`));
+}

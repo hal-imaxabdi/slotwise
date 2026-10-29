@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDuration, formatIdr } from './format.ts';
+import { formatDuration, formatIdr, formatLongDate } from './format.ts';
 
 describe('formatIdr', () => {
   it('formats zero', () => {
@@ -26,5 +26,12 @@ describe('formatDuration', () => {
 
   it('shows hours and minutes', () => {
     expect(formatDuration(90)).toBe('1 h 30 min');
+  });
+});
+
+describe('formatLongDate', () => {
+  it('writes a plain calendar date in full without shifting the day', () => {
+    expect(formatLongDate('2026-10-29')).toBe('Thursday, October 29, 2026');
+    expect(formatLongDate('2026-01-01')).toBe('Thursday, January 1, 2026');
   });
 });

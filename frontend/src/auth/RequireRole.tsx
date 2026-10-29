@@ -12,10 +12,12 @@ export function RequireRole({ allow }: RequireRoleProps) {
 
   if (user === null || !allow.includes(user.role)) {
     return (
-      <section>
+      <section className="empty-state">
         <h1>Not allowed</h1>
         <p>You do not have access to this page.</p>
-        <Link to="/services">Back to services</Link>
+        <Link to="/services" className="btn btn--primary">
+          Back to services
+        </Link>
       </section>
     );
   }

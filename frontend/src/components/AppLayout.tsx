@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { MouseEvent } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { describeApiError } from '../api/describeError.ts';
 import { useAuth } from '../auth/useAuth.ts';
+import { BrandMark } from './icons.tsx';
 
 const APP_NAME = 'Slotwise';
 
@@ -26,6 +27,19 @@ function pageTitle(pathname: string): string {
     return `Admin - ${APP_NAME}`;
   }
   return APP_NAME;
+}
+
+function initials(fullName: string): string {
+  const parts = fullName
+    .trim()
+    .split(/\s+/)
+    .filter((part) => part !== '');
+  if (parts.length === 0) {
+    return '?';
+  }
+  const first = parts[0].charAt(0);
+  const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
+  return (first + last).toUpperCase();
 }
 
 export function AppLayout() {
@@ -57,50 +71,62 @@ export function AppLayout() {
   }
 
   return (
-    <div>
+    <div className="app-shell">
       <a href="#main-content" className="skip-link" onClick={handleSkip}>
         Skip to main content
       </a>
       <header className="app-header">
-        <span className="brand">{APP_NAME}</span>
-        <nav aria-label="Main">
-          <NavLink to="/services">Services</NavLink>
-          <NavLink to="/appointments">My appointments</NavLink>
-          {isStaff && (
-            <>
-              <NavLink to="/staff" end>
-                Staff
-              </NavLink>
-              <NavLink to="/staff/unavailable-periods">Closures</NavLink>
-            </>
-          )}
-          {isAdmin && (
-            <>
-              <NavLink to="/admin" end>
-                Admin
-              </NavLink>
-              <NavLink to="/admin/business-hours">Business hours</NavLink>
-            </>
-          )}
-        </nav>
-        <div className="app-user">
-          {user !== null && <span>{user.full_name}</span>}
-          <button
-            type="button"
-            onClick={() => {
-              void handleLogout();
-            }}
-          >
-            Sign out
-          </button>
+        <div className="app-header__inner">
+          <Link to="/services" className="brand">
+            <BrandMark className="brand-mark" />
+            {APP_NAME}
+          </Link>
+          <nav aria-label="Main">
+            <NavLink to="/services">Services</NavLink>
+            <NavLink to="/appointments">My appointments</NavLink>
+            {isStaff && (
+              <>
+                <NavLink to="/staff" end>
+                  Staff
+                </NavLink>
+                <NavLink to="/staff/unavailable-periods">Closures</NavLink>
+              </>
+            )}
+            {isAdmin && (
+              <>
+                <NavLink to="/admin" end>
+                  Admin
+                </NavLink>
+                <NavLink to="/admin/business-hours">Business hours</NavLink>
+              </>
+            )}
+          </nav>
+          <div className="app-user">
+            {user !== null && (
+              <>
+                <span className="avatar" aria-hidden="true">
+                  {initials(user.full_name)}
+                </span>
+                <span className="user-name">{user.full_name}</span>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                void handleLogout();
+              }}
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
       {error !== null && (
-        <p role="alert" className="app-error">
+        <p role="alert" className="app-error alert alert--error">
           {error}
         </p>
       )}
-      <main id="main-content" ref={mainRef} tabIndex={-1}>
+      <main id="main-content" ref={mainRef} tabIndex={-1} className="app-main">
         <Outlet />
       </main>
     </div>

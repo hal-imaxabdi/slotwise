@@ -75,13 +75,19 @@ export function ClosureForm({ onCreate }: Props) {
 
   return (
     <form
+      className="card form-stack"
       onSubmit={(e) => {
         void handleSubmit(e);
       }}
       aria-label="Add a closure"
     >
-      <p>Times are in Asia/Jakarta. A closure blocks booking for everyone.</p>
       <div>
+        <h2 className="card-title">Add a closure</h2>
+        <p className="card-lead">
+          Times are in Asia/Jakarta. A closure blocks booking for everyone.
+        </p>
+      </div>
+      <div className="field">
         <label htmlFor={`${uid}-date`}>Date</label>
         <input
           id={`${uid}-date`}
@@ -93,7 +99,7 @@ export function ClosureForm({ onCreate }: Props) {
           }}
         />
       </div>
-      <div>
+      <div className="field">
         <label htmlFor={`${uid}-start`}>Start time</label>
         <select
           id={`${uid}-start`}
@@ -109,7 +115,7 @@ export function ClosureForm({ onCreate }: Props) {
           ))}
         </select>
       </div>
-      <div>
+      <div className="field">
         <label htmlFor={`${uid}-end`}>End time</label>
         <select
           id={`${uid}-end`}
@@ -126,7 +132,7 @@ export function ClosureForm({ onCreate }: Props) {
           ))}
         </select>
       </div>
-      <div>
+      <div className="field">
         <label htmlFor={`${uid}-reason`}>Reason</label>
         <input
           id={`${uid}-reason`}
@@ -138,9 +144,17 @@ export function ClosureForm({ onCreate }: Props) {
           }}
         />
       </div>
-      {error !== null && <p role="alert">{error}</p>}
-      {status !== null && <p role="status">{status}</p>}
-      <button type="submit" disabled={submitting}>
+      {error !== null && (
+        <p role="alert" className="alert alert--error">
+          {error}
+        </p>
+      )}
+      {status !== null && (
+        <p role="status" className="alert alert--success">
+          {status}
+        </p>
+      )}
+      <button type="submit" className="btn--primary" disabled={submitting}>
         {submitting ? 'Adding…' : 'Add closure'}
       </button>
     </form>

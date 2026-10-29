@@ -1,0 +1,52 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--fs-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { margin: 0; color: var(--navy-950); line-height: 1.25; letter-spacing: -0.01em; }
+h1 { font-size: var(--fs-2xl); font-weight: 700; }
+h2 { font-size: var(--fs-xl); font-weight: 650; }
+h3 { font-size: var(--fs-lg); font-weight: 650; }
+p { margin: 0 0 var(--s-3); }
+ul, ol { margin: 0; padding: 0; }
+
+a { color: var(--brand-700); text-underline-offset: 3px; }
+a:hover { color: var(--navy-950); }
+
+/* Keyboard focus ring for every interactive element. */
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--r-sm); }
+
+/* Elements focused only by code (skip link target, page headings): no ring. */
+main:focus, [tabindex='-1']:focus { outline: none; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: var(--s-2) var(--s-4);
+  background: var(--surface);
+  color: var(--navy-950);
+  font-weight: 600;
+  border: 2px solid var(--navy-950);
+  border-radius: var(--r-sm);
+}
+.skip-link:focus { left: var(--s-4); top: var(--s-4); }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

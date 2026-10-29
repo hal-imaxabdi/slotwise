@@ -58,9 +58,7 @@ function validate(sorted: BusinessInterval[]): string | null {
 function sameIntervals(a: BusinessInterval[], b: BusinessInterval[]): boolean {
   return (
     a.length === b.length &&
-    a.every(
-      (x, i) => x.open_minute === b[i].open_minute && x.close_minute === b[i].close_minute,
-    )
+    a.every((x, i) => x.open_minute === b[i].open_minute && x.close_minute === b[i].close_minute)
   );
 }
 
@@ -128,6 +126,7 @@ export function BusinessHoursDayEditor({
 
   return (
     <form
+      className="hours-day"
       aria-labelledby={`${uid}-heading`}
       onSubmit={(event) => {
         void handleSubmit(event);
@@ -135,9 +134,9 @@ export function BusinessHoursDayEditor({
     >
       <h3 id={`${uid}-heading`}>{dayName}</h3>
       {rows.length === 0 ? (
-        <p>Closed all day.</p>
+        <p className="hours-closed">Closed all day.</p>
       ) : (
-        <ul>
+        <ul className="hours-intervals">
           {rows.map((row, index) => {
             const label = `${dayName} interval ${String(index + 1)}`;
             return (
@@ -156,7 +155,9 @@ export function BusinessHoursDayEditor({
                     </option>
                   ))}
                 </select>
-                <span aria-hidden="true"> to </span>
+                <span className="hours-sep" aria-hidden="true">
+                  to
+                </span>
                 <select
                   aria-label={`${label} closes`}
                   value={String(row.close)}
@@ -175,6 +176,7 @@ export function BusinessHoursDayEditor({
                 </select>
                 <button
                   type="button"
+                  className="btn--quiet btn--sm"
                   aria-label={`Remove ${label}`}
                   onClick={() => {
                     edit((current) => current.filter((r) => r.key !== row.key));
@@ -187,19 +189,35 @@ export function BusinessHoursDayEditor({
           })}
         </ul>
       )}
-      <button
-        type="button"
-        aria-label={`Add interval to ${dayName}`}
-        disabled={rows.length >= MAX_INTERVALS}
-        onClick={addInterval}
-      >
-        Add interval
-      </button>
-      <button type="submit" aria-label={`Save ${dayName} hours`} disabled={saving}>
-        {saving ? 'Saving…' : 'Save'}
-      </button>
-      {error !== null && <p role="alert">{error}</p>}
-      {notice !== null && <p role="status">{notice}</p>}
+      <div className="hours-actions">
+        <button
+          type="button"
+          className="btn--sm"
+          aria-label={`Add interval to ${dayName}`}
+          disabled={rows.length >= MAX_INTERVALS}
+          onClick={addInterval}
+        >
+          Add interval
+        </button>
+        <button
+          type="submit"
+          className="btn--primary btn--sm"
+          aria-label={`Save ${dayName} hours`}
+          disabled={saving}
+        >
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+      {error !== null && (
+        <p role="alert" className="alert alert--error">
+          {error}
+        </p>
+      )}
+      {notice !== null && (
+        <p role="status" className="alert alert--success">
+          {notice}
+        </p>
+      )}
     </form>
   );
 }

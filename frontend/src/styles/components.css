@@ -1,0 +1,109 @@
+/* ---------- Buttons: plain <button> is the secondary style; classes add variants ---------- */
+:where(button, .btn) {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
+  min-height: 2.5rem; padding: 0.5rem 1rem;
+  font: inherit; font-size: var(--fs-sm); font-weight: 600; line-height: 1.2; text-decoration: none;
+  color: var(--navy-950); background: var(--surface);
+  border: 1px solid var(--border-strong); border-radius: var(--r-md);
+  cursor: pointer; transition: background var(--ease), border-color var(--ease), box-shadow var(--ease);
+}
+:where(button, .btn):hover:not(:disabled):not([aria-disabled='true']) { background: var(--surface-2); border-color: var(--navy-700); color: var(--navy-950); }
+:where(button, .btn):active:not(:disabled) { background: var(--neutral-bg); }
+
+.btn--primary { color: #fff; background: var(--brand-600); border-color: var(--brand-600); box-shadow: var(--shadow-sm); }
+.btn--primary:hover:not(:disabled):not([aria-disabled='true']) { color: #fff; background: var(--brand-700); border-color: var(--brand-700); }
+.btn--primary:active:not(:disabled) { background: var(--navy-900); }
+
+.btn--danger { color: #fff; background: var(--danger); border-color: var(--danger); }
+.btn--danger:hover:not(:disabled) { color: #fff; background: #8f1914; border-color: #8f1914; }
+.btn--danger:active:not(:disabled) { background: #7a1410; }
+
+.btn--quiet { border-color: transparent; background: transparent; color: var(--brand-700); }
+.btn--quiet:hover:not(:disabled) { background: var(--brand-50); border-color: transparent; color: var(--brand-700); }
+.btn--sm { min-height: 2rem; padding: 0.25rem 0.75rem; font-size: var(--fs-xs); }
+.btn--block { width: 100%; }
+
+/* Disabled controls. */
+button:disabled, [aria-disabled='true'] { cursor: not-allowed; opacity: 0.55; }
+
+.btn-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+
+/* ---------- Forms ---------- */
+label { display: block; margin-bottom: var(--s-1); font-size: var(--fs-sm); font-weight: 600; color: var(--navy-950); }
+:where(input, select, textarea) {
+  width: 100%; min-height: 2.75rem; padding: 0.55rem 0.75rem;
+  font: inherit; color: var(--text); background: var(--surface);
+  border: 1px solid var(--border-strong); border-radius: var(--r-md);
+  transition: border-color var(--ease), box-shadow var(--ease);
+}
+:where(textarea) { min-height: 5.5rem; resize: vertical; line-height: 1.5; }
+:where(select) { padding-right: 2rem; appearance: none; cursor: pointer;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%234a5b72' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 0.85rem center; }
+:where(input, select, textarea):hover:not(:disabled) { border-color: var(--navy-700); }
+:where(input, select, textarea):focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; border-color: var(--focus); }
+:where(input, select, textarea):disabled { background: var(--neutral-bg); cursor: not-allowed; opacity: 0.7; }
+:where(input[type='checkbox'], input[type='radio']) { width: auto; min-height: 0; }
+
+.field { display: grid; gap: 0; min-width: 0; }
+.field-hint { margin: var(--s-1) 0 0; font-size: var(--fs-xs); color: var(--text-muted); }
+.form-grid { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); align-items: start; }
+.form-stack { display: grid; gap: var(--s-4); }
+.form-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+.char-count { margin: var(--s-1) 0 0; font-size: var(--fs-xs); color: var(--text-muted); text-align: right; }
+fieldset { min-width: 0; margin: 0; }
+legend { padding: 0; font-size: var(--fs-sm); font-weight: 700; color: var(--navy-950); }
+
+/* ---------- Cards and panels ---------- */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); padding: var(--s-5); }
+.card > :last-child, .panel > :last-child { margin-bottom: 0; }
+.card-title { margin-bottom: var(--s-1); }
+.card-lead { margin: 0 0 var(--s-4); color: var(--text-muted); font-size: var(--fs-sm); }
+.panel { margin-top: var(--s-3); padding: var(--s-4); background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); }
+
+.hint { color: var(--text-muted); font-size: var(--fs-sm); }
+
+/* ---------- Alerts, loading, empty states ---------- */
+.alert { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); margin: 0 0 var(--s-4);
+  padding: var(--s-3) var(--s-4); border: 1px solid; border-left-width: 4px; border-radius: var(--r-md); font-size: var(--fs-sm); }
+.alert p { margin: 0; }
+.alert > p { flex: 1 1 14rem; }
+.alert--error { color: var(--danger); background: var(--danger-bg); border-color: var(--danger-line); border-left-color: var(--danger); }
+.alert--success { color: var(--success); background: var(--success-bg); border-color: var(--success-line); border-left-color: var(--success); }
+.alert--warning { color: var(--warning); background: var(--warning-bg); border-color: var(--warning-line); border-left-color: var(--warning); }
+.alert--info { color: var(--info); background: var(--info-bg); border-color: #b7cdf6; border-left-color: var(--info); }
+.alert--error button { color: var(--danger); border-color: var(--danger); background: #fff; }
+
+.loading { display: flex; align-items: center; gap: var(--s-3); margin: var(--s-4) 0; color: var(--text-muted); font-size: var(--fs-sm); }
+.loading::before { content: ''; flex: none; width: 1.1rem; height: 1.1rem; border: 2px solid var(--border); border-top-color: var(--brand-600); border-radius: 50%; animation: spin 0.8s linear infinite; }
+.loading--page { justify-content: center; min-height: 40vh; margin: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.skeleton { display: block; border-radius: var(--r-md); background: linear-gradient(90deg, var(--neutral-bg) 25%, #f4f7fa 50%, var(--neutral-bg) 75%); background-size: 200% 100%; animation: shimmer 1.4s ease-in-out infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+.empty-state { display: grid; justify-items: center; gap: var(--s-1); padding: var(--s-6) var(--s-4); text-align: center; color: var(--text-muted);
+  background: var(--surface); border: 1px dashed var(--border-strong); border-radius: var(--r-lg); }
+.empty-state p { margin: 0; }
+.empty-state .empty-title { font-weight: 650; color: var(--navy-950); }
+.empty-state .btn { margin-top: var(--s-3); }
+.empty-icon { width: 2.5rem; height: 2.5rem; color: var(--brand-600); margin-bottom: var(--s-2); }
+
+/* ---------- Status pills (text stays "Status: X" for screen readers and tests) ---------- */
+.status-pill { display: inline-flex; align-items: center; gap: 0.4rem; margin: 0; padding: 0.15rem 0.65rem; font-size: var(--fs-xs); font-weight: 650;
+  color: var(--neutral); background: var(--neutral-bg); border-radius: var(--r-pill); width: fit-content; }
+.status-pill::before { content: ''; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: currentColor; }
+.status-pill--booked { color: var(--info); background: var(--info-bg); }
+.status-pill--completed { color: var(--success); background: var(--success-bg); }
+.status-pill--cancelled, .status-pill--inactive { color: var(--neutral); background: var(--neutral-bg); }
+.status-pill--no_show { color: var(--warning); background: var(--warning-bg); }
+.status-pill--active { color: var(--success); background: var(--success-bg); }
+
+/* ---------- Inline confirmation panel (cancel / deactivate / delete) ---------- */
+.confirm-panel { margin-top: var(--s-3); padding: var(--s-4); border: 1px solid var(--warning-line); border-left: 4px solid var(--warning); border-radius: var(--r-md); background: var(--warning-bg); color: var(--text); }
+.confirm-panel:focus-visible { outline: 2px solid var(--focus); }
+.confirm-panel > p { margin: 0 0 var(--s-3); font-weight: 600; color: var(--warning); }
+.confirm-panel .btn-row { margin: 0; }
+
+.back-link { display: inline-flex; align-items: center; gap: var(--s-1); margin-bottom: var(--s-3); font-size: var(--fs-sm); font-weight: 600; text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
+.icon { width: 1.1em; height: 1.1em; flex: none; vertical-align: -0.15em; }

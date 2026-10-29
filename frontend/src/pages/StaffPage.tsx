@@ -5,7 +5,6 @@ import { StaffBookingForm } from '../components/StaffBookingForm.tsx';
 import type { StaffFilters } from '../hooks/useStaffAppointments.ts';
 import { useServices } from '../hooks/useServices.ts';
 import { todayInJakarta } from '../lib/dates.ts';
-import './StaffPage.css';
 
 const STATUS_OPTIONS: ReadonlyArray<{ value: AppointmentStatus | ''; label: string }> = [
   { value: '', label: 'All statuses' },
@@ -47,7 +46,7 @@ export function StaffPage() {
   const sState = services.state;
   if (sState.kind === 'error') {
     return (
-      <div role="alert">
+      <div role="alert" className="alert alert--error">
         <p>{sState.message}</p>
         <button
           type="button"
@@ -61,7 +60,11 @@ export function StaffPage() {
     );
   }
   if (sState.kind === 'loading') {
-    return <p role="status">Loading...</p>;
+    return (
+      <p role="status" className="loading">
+        Loading...
+      </p>
+    );
   }
 
   const serviceNames = new Map<string, string>(
@@ -72,10 +75,14 @@ export function StaffPage() {
 
   return (
     <section>
-      <h1>Staff</h1>
-      <p>
+      <div className="page-header">
+        <div>
+          <h1>Staff</h1>
+          <p className="page-lead">Review appointments and book on behalf of customers.</p>
+        </div>
         <button
           type="button"
+          className="btn--primary"
           aria-expanded={showBooking}
           onClick={() => {
             setShowBooking((open) => !open);
@@ -83,7 +90,7 @@ export function StaffPage() {
         >
           Book for a customer
         </button>
-      </p>
+      </div>
       {showBooking && (
         <StaffBookingForm
           services={sState.services}
@@ -136,11 +143,13 @@ export function StaffPage() {
         </div>
       </fieldset>
       <p className="staff-filter-hint">
-        Dates and times are in Asia/Jakarta time. Appointments are listed newest first. Clear a
-        date to remove that limit.
+        Dates and times are in Asia/Jakarta time. Appointments are listed newest first. Clear a date
+        to remove that limit.
       </p>
       {rangeInvalid ? (
-        <p role="alert">The From date must not be after the To date.</p>
+        <p role="alert" className="alert alert--warning">
+          The From date must not be after the To date.
+        </p>
       ) : (
         <StaffAppointmentList
           key={`${range.from}|${range.to}|${status}|${listVersion}`}

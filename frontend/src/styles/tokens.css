@@ -1,0 +1,75 @@
+/* Slotwise design tokens. Every colour pair used in the app was checked for WCAG AA contrast. */
+:root {
+  color-scheme: light;
+
+  /* Brand: deep navy for structure, teal for action. */
+  --navy-950: #0b1b2e;
+  --navy-900: #12263f;
+  --navy-700: #2a4466;
+  --brand-50: #e4f4f3;
+  --brand-100: #c3e6e3;
+  --brand-500: #14a39d;
+  --brand-600: #0a7571;
+  --brand-700: #075e5b;
+  --accent-on-dark: #4fd1c5;
+
+  /* Surfaces and lines. */
+  --bg: #f2f5f9;
+  --surface: #ffffff;
+  --surface-2: #f7f9fc;
+  --border: #d5dde7;
+  --border-strong: #76859a;
+
+  /* Text. */
+  --text: #14233a;
+  --text-muted: #4a5b72;
+  --text-on-dark: #ffffff;
+  --text-on-dark-muted: #c8d4e3;
+
+  /* Semantic. */
+  --success: #13653f;
+  --success-bg: #e6f5ec;
+  --success-line: #9fd3b6;
+  --warning: #6e4300;
+  --warning-bg: #fff2d1;
+  --warning-line: #e6c36b;
+  --danger: #b0201a;
+  --danger-bg: #fdecea;
+  --danger-line: #efaaa5;
+  --info: #1b4db1;
+  --info-bg: #e8f0fe;
+  --neutral: #3b4a60;
+  --neutral-bg: #e8edf3;
+  --focus: #1456d8;
+  --focus-on-dark: #8fd3ff;
+
+  /* Type scale. */
+  --font: 'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: clamp(1.5rem, 1.2rem + 1.2vw, 1.875rem);
+
+  /* Spacing (4px base). */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+
+  /* Shape, depth, motion. */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 999px;
+  --shadow-sm: 0 1px 2px rgb(11 27 46 / 6%);
+  --shadow-md: 0 4px 14px rgb(11 27 46 / 8%);
+  --ease: 140ms ease;
+
+  --content: 72rem;
+}

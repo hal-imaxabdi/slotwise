@@ -60,25 +60,35 @@ export function CustomerPicker({ selectedId, onSelect, disabled = false }: Custo
 
   return (
     <div>
-      <form aria-label="Find a customer" onSubmit={handleSubmit}>
-        <label htmlFor="customer-search">Customer name or email</label>{' '}
-        <input
-          id="customer-search"
-          type="text"
-          maxLength={100}
-          value={text}
-          onChange={(event) => {
-            setText(event.target.value);
-          }}
-        />{' '}
+      <form className="picker-search" aria-label="Find a customer" onSubmit={handleSubmit}>
+        <div className="field">
+          <label htmlFor="customer-search">Customer name or email</label>
+          <input
+            id="customer-search"
+            type="text"
+            maxLength={100}
+            value={text}
+            onChange={(event) => {
+              setText(event.target.value);
+            }}
+          />
+        </div>
         <button type="submit" disabled={disabled}>
           Search
         </button>
       </form>
-      {state.kind === 'idle' && <p>Search to find a customer. Leave it empty to list the first few.</p>}
-      {state.kind === 'loading' && <p role="status">Searching...</p>}
+      {state.kind === 'idle' && (
+        <p className="field-hint">
+          Search to find a customer. Leave it empty to list the first few.
+        </p>
+      )}
+      {state.kind === 'loading' && (
+        <p role="status" className="loading">
+          Searching...
+        </p>
+      )}
       {state.kind === 'error' && (
-        <div role="alert">
+        <div role="alert" className="alert alert--error">
           <p>{state.message}</p>
           <button
             type="button"
@@ -90,9 +100,11 @@ export function CustomerPicker({ selectedId, onSelect, disabled = false }: Custo
           </button>
         </div>
       )}
-      {state.kind === 'ready' && state.customers.length === 0 && <p>No matching customers.</p>}
+      {state.kind === 'ready' && state.customers.length === 0 && (
+        <p className="hint">No matching customers.</p>
+      )}
       {state.kind === 'ready' && state.customers.length > 0 && (
-        <ul aria-label="Matching customers">
+        <ul className="customer-list" aria-label="Matching customers">
           {state.customers.map((customer) => (
             <li key={customer.id}>
               <button

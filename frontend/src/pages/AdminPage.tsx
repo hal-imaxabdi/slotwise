@@ -17,31 +17,39 @@ export function AdminPage() {
 
   return (
     <div>
-      <h1>Admin</h1>
-      <div>
-        <label htmlFor={`${uid}-filter`}>Show</label>
-        <select
-          id={`${uid}-filter`}
-          value={filter}
-          onChange={(e) => setFilter(e.target.value as AdminServiceFilter)}
-        >
-          {FILTER_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+      <div className="page-header">
+        <div>
+          <h1>Admin</h1>
+          <p className="page-lead">Manage the services customers can book.</p>
+        </div>
       </div>
-      <button
-        type="button"
-        aria-expanded={addOpen}
-        aria-controls={`${uid}-add`}
-        onClick={() => setAddOpen((open) => !open)}
-      >
-        Add a service
-      </button>
+      <div className="admin-toolbar">
+        <div className="field">
+          <label htmlFor={`${uid}-filter`}>Show</label>
+          <select
+            id={`${uid}-filter`}
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as AdminServiceFilter)}
+          >
+            {FILTER_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          type="button"
+          className="btn--primary"
+          aria-expanded={addOpen}
+          aria-controls={`${uid}-add`}
+          onClick={() => setAddOpen((open) => !open)}
+        >
+          Add a service
+        </button>
+      </div>
       {addOpen && (
-        <div id={`${uid}-add`}>
+        <div id={`${uid}-add`} className="card admin-add">
           <AdminServiceForm onSaved={() => setListVersion((v) => v + 1)} />
         </div>
       )}
