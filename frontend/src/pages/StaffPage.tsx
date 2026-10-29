@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { AppointmentStatus } from '../api/types.ts';
 import { StaffAppointmentList } from '../components/StaffAppointmentList.tsx';
+import { StaffBookingForm } from '../components/StaffBookingForm.tsx';
 import type { StaffFilters } from '../hooks/useStaffAppointments.ts';
 import { useServices } from '../hooks/useServices.ts';
 import { todayInJakarta } from '../lib/dates.ts';
@@ -39,6 +40,9 @@ export function StaffPage() {
   const services = useServices();
   const [range, setRange] = useState(initialRange);
   const [status, setStatus] = useState<AppointmentStatus | ''>('');
+  const [showBooking, setShowBooking] = useState(false);
+  // Bumped after a staff booking so the list below reloads from page 1.
+  const [listVersion, setListVersion] = useState(0);
 
   const sState = services.state;
   if (sState.kind === 'error') {
@@ -69,6 +73,25 @@ export function StaffPage() {
   return (
     <section>
       <h1>Staff</h1>
+      <p>
+        <button
+          type="button"
+          aria-expanded={showBooking}
+          onClick={() => {
+            setShowBooking((open) => !open);
+          }}
+        >
+          Book for a customer
+        </button>
+      </p>
+      {showBooking && (
+        <StaffBookingForm
+          services={sState.services}
+          onBooked={() => {
+            setListVersion((n) => n + 1);
+          }}
+        />
+      )}
       <fieldset className="staff-filters">
         <legend>Filter appointments</legend>
         <div className="staff-filter">
@@ -120,7 +143,7 @@ export function StaffPage() {
         <p role="alert">The From date must not be after the To date.</p>
       ) : (
         <StaffAppointmentList
-          key={`${range.from}|${range.to}|${status}`}
+          key={`${range.from}|${range.to}|${status}|${listVersion}`}
           filters={filters}
           serviceNames={serviceNames}
         />

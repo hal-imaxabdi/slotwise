@@ -75,3 +75,17 @@ export interface StaffAppointmentQuery {
   limit: number;
   offset: number;
 }
+
+/** Minimal customer record returned by the staff customer search. */
+export interface StaffCustomer {
+  id: string;
+  email: string;
+  full_name: string;
+}
+
+export interface CreateStaffAppointmentInput {
+  customer_id: string;
+  service_id: string;
+  starts_at: string;
+  notes?: string;
+}

@@ -6,10 +6,12 @@ import type {
   ChangePasswordInput,
   ChangePasswordResult,
   CreateAppointmentInput,
+  CreateStaffAppointmentInput,
   Service,
   SlotsResponse,
   StaffAppointment,
   StaffAppointmentQuery,
+  StaffCustomer,
 } from './types.ts';
 
 export async function login(email: string, password: string): Promise<AuthOut> {
@@ -118,4 +120,21 @@ export function markNoShow(id: string): Promise<Appointment> {
   return request<Appointment>(`/staff/appointments/${encodeURIComponent(id)}/no-show`, {
     method: 'POST',
   });
+}
+
+const CUSTOMER_SEARCH_LIMIT = 20;
+
+/** Staff-only. An empty query lists the first customers by name. */
+export function searchCustomers(query: string, signal?: AbortSignal): Promise<StaffCustomer[]> {
+  const params = new URLSearchParams();
+  if (query !== '') {
+    params.set('q', query);
+  }
+  params.set('limit', String(CUSTOMER_SEARCH_LIMIT));
+  return request<StaffCustomer[]>(`/staff/customers?${params.toString()}`, { signal });
+}
+
+// The response has the appointment fields (plus customer_id and created_by_id).
+export function createStaffAppointment(input: CreateStaffAppointmentInput): Promise<Appointment> {
+  return request<Appointment>('/staff/appointments', { method: 'POST', body: input });
 }
