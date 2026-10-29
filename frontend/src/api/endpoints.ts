@@ -1,10 +1,12 @@
 import { request, setCsrfToken } from './client.ts';
 import { UnauthorizedError } from './errors.ts';
 import type {
+  AdminService,
   Appointment,
   AuthOut,
   ChangePasswordInput,
   ChangePasswordResult,
+  CreateAdminServiceInput,
   CreateAppointmentInput,
   CreateStaffAppointmentInput,
   Service,
@@ -12,6 +14,7 @@ import type {
   StaffAppointment,
   StaffAppointmentQuery,
   StaffCustomer,
+  UpdateAdminServiceInput,
 } from './types.ts';
 
 export async function login(email: string, password: string): Promise<AuthOut> {
@@ -137,4 +140,39 @@ export function searchCustomers(query: string, signal?: AbortSignal): Promise<St
 // The response has the appointment fields (plus customer_id and created_by_id).
 export function createStaffAppointment(input: CreateStaffAppointmentInput): Promise<Appointment> {
   return request<Appointment>('/staff/appointments', { method: 'POST', body: input });
+}
+
+/** Admin-only. `active` undefined lists every service; true or false filters. */
+export function listAdminServices(
+  active: boolean | undefined,
+  signal?: AbortSignal,
+): Promise<AdminService[]> {
+  const query = active === undefined ? '' : `?active=${String(active)}`;
+  return request<AdminService[]>(`/admin/services${query}`, { signal });
+}
+
+export function createAdminService(input: CreateAdminServiceInput): Promise<AdminService> {
+  return request<AdminService>('/admin/services', { method: 'POST', body: input });
+}
+
+export function updateAdminService(
+  id: string,
+  changes: UpdateAdminServiceInput,
+): Promise<AdminService> {
+  return request<AdminService>(`/admin/services/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: changes,
+  });
+}
+
+export function deactivateAdminService(id: string): Promise<AdminService> {
+  return request<AdminService>(`/admin/services/${encodeURIComponent(id)}/deactivate`, {
+    method: 'POST',
+  });
+}
+
+export function activateAdminService(id: string): Promise<AdminService> {
+  return request<AdminService>(`/admin/services/${encodeURIComponent(id)}/activate`, {
+    method: 'POST',
+  });
 }

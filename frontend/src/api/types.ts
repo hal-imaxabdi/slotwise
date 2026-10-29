@@ -89,3 +89,18 @@ export interface CreateStaffAppointmentInput {
   starts_at: string;
   notes?: string;
 }
+
+/** Admin view of a service: the public fields plus whether it can still be booked. */
+export interface AdminService extends Service {
+  is_active: boolean;
+}
+
+export interface CreateAdminServiceInput {
+  name: string;
+  description: string;
+  duration_minutes: number;
+  price_idr: number;
+}
+
+/** Send only the fields that changed. Never send null: the server rejects it. */
+export type UpdateAdminServiceInput = Partial<CreateAdminServiceInput>;
