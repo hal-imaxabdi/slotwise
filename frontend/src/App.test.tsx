@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getSlots, listAdminServices, listBusinessHours, listMyAppointments, listServices, logout, me } from './api/endpoints.ts';
+import { getSlots, listAdminServices, listBusinessHours, listMyAppointments, listServices, listUnavailablePeriods, logout, me } from './api/endpoints.ts';
 import { UnauthorizedError } from './api/errors.ts';
 import type { Service } from './api/types.ts';
 import App from './App.tsx';
@@ -141,5 +141,28 @@ describe('App business-hours routing', () => {
     renderApp('/admin/business-hours');
     expect(await screen.findByRole('heading', { name: 'Not allowed' })).toBeInTheDocument();
     expect(listBusinessHours).not.toHaveBeenCalled();
+  });
+});
+
+describe('App closures routing', () => {
+  it('shows the closures page to staff', async () => {
+    vi.mocked(me).mockResolvedValue({ ...AUTH, user: { ...AUTH.user, role: 'staff' } });
+    vi.mocked(listUnavailablePeriods).mockResolvedValue([]);
+    renderApp('/staff/unavailable-periods');
+    expect(await screen.findByRole('heading', { name: 'Closures', level: 1 })).toBeInTheDocument();
+  });
+
+  it('shows the closures page to an admin', async () => {
+    vi.mocked(me).mockResolvedValue({ ...AUTH, user: { ...AUTH.user, role: 'admin' } });
+    vi.mocked(listUnavailablePeriods).mockResolvedValue([]);
+    renderApp('/staff/unavailable-periods');
+    expect(await screen.findByRole('heading', { name: 'Closures', level: 1 })).toBeInTheDocument();
+  });
+
+  it('keeps a customer off closures', async () => {
+    vi.mocked(me).mockResolvedValue(AUTH);
+    renderApp('/staff/unavailable-periods');
+    expect(await screen.findByRole('heading', { name: 'Not allowed' })).toBeInTheDocument();
+    expect(listUnavailablePeriods).not.toHaveBeenCalled();
   });
 });
