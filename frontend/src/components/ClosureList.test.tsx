@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../api/errors.ts';
 import type { UnavailablePeriod } from '../api/types.ts';
@@ -102,7 +102,9 @@ describe('ClosureList delete', () => {
     expect((await screen.findByRole('status')).textContent).toBe('Closure deleted.');
     expect(onRemove).toHaveBeenCalledWith('p1');
     expect(screen.queryByRole('group')).toBeNull();
-    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Closures' }));
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Closures' })),
+    );
   });
 
   it('a 404 says so, refreshes the list and focuses the heading', async () => {
