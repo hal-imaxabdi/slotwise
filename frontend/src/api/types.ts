@@ -121,3 +121,27 @@ export interface BusinessHour extends BusinessInterval {
 export interface ReplaceBusinessHoursInput {
   intervals: BusinessInterval[];
 }
+
+/** Timestamps are UTC ISO strings. */
+export interface UnavailablePeriod {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  reason: string;
+  created_by_id: string;
+}
+
+/** Both times must be on the 30-minute grid, end after start. Reason is 1-200 chars. */
+export interface CreateUnavailablePeriodInput {
+  starts_at: string;
+  ends_at: string;
+  reason: string;
+}
+
+/** from/to are Jakarta-local dates (YYYY-MM-DD), inclusive. Server default limit is 50, max 200. */
+export interface ListUnavailablePeriodsParams {
+  from?: string;
+  to?: string;
+  limit?: number;
+  offset?: number;
+}

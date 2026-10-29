@@ -11,6 +11,9 @@ import type {
   CreateAppointmentInput,
   CreateStaffAppointmentInput,
   ReplaceBusinessHoursInput,
+  UnavailablePeriod,
+  CreateUnavailablePeriodInput,
+  ListUnavailablePeriodsParams,
   Service,
   SlotsResponse,
   StaffAppointment,
@@ -192,5 +195,39 @@ export function replaceBusinessHours(
   return request<BusinessHour[]>(`/admin/business-hours/${String(weekday)}`, {
     method: 'PUT',
     body: input,
+  });
+}
+
+/** Staff and admin. Closures starting in the optional Jakarta date range, newest first. */
+export function listUnavailablePeriods(
+  params: ListUnavailablePeriodsParams = {},
+  signal?: AbortSignal,
+): Promise<UnavailablePeriod[]> {
+  const query = new URLSearchParams();
+  if (params.from !== undefined) query.set('from', params.from);
+  if (params.to !== undefined) query.set('to', params.to);
+  if (params.limit !== undefined) query.set('limit', String(params.limit));
+  if (params.offset !== undefined) query.set('offset', String(params.offset));
+  const qs = query.toString();
+  return request<UnavailablePeriod[]>(
+    `/staff/unavailable-periods${qs === '' ? '' : `?${qs}`}`,
+    { signal },
+  );
+}
+
+/** Staff and admin. 409 if active appointments overlap, 422 if off-grid or end <= start. */
+export function createUnavailablePeriod(
+  input: CreateUnavailablePeriodInput,
+): Promise<UnavailablePeriod> {
+  return request<UnavailablePeriod>('/staff/unavailable-periods', {
+    method: 'POST',
+    body: input,
+  });
+}
+
+/** Staff and admin. 204 on success, 404 if already gone. */
+export function deleteUnavailablePeriod(id: string): Promise<void> {
+  return request<void>(`/staff/unavailable-periods/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
   });
 }
