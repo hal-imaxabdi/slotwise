@@ -6,6 +6,7 @@ import { AppLayout } from './components/AppLayout.tsx';
 import { AdminPage } from './pages/AdminPage.tsx';
 import { AppointmentsPage } from './pages/AppointmentsPage.tsx';
 import { BookingPage } from './pages/BookingPage.tsx';
+import { BusinessHoursPage } from './pages/BusinessHoursPage.tsx';
 import { LoginPage } from './pages/LoginPage.tsx';
 import { ServicesPage } from './pages/ServicesPage.tsx';
 import { StaffPage } from './pages/StaffPage.tsx';
@@ -28,6 +29,7 @@ export default function App() {
           </Route>
           <Route element={<RequireRole allow={ADMIN_ROLES} />}>
             <Route path="admin" element={<AdminPage />} />
+            <Route path="admin/business-hours" element={<BusinessHoursPage />} />
           </Route>
         </Route>
       </Route>

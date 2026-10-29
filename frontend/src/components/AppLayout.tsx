@@ -64,7 +64,14 @@ export function AppLayout() {
           <NavLink to="/services">Services</NavLink>
           <NavLink to="/appointments">My appointments</NavLink>
           {isStaff && <NavLink to="/staff">Staff</NavLink>}
-          {isAdmin && <NavLink to="/admin">Admin</NavLink>}
+          {isAdmin && (
+            <>
+              <NavLink to="/admin" end>
+                Admin
+              </NavLink>
+              <NavLink to="/admin/business-hours">Business hours</NavLink>
+            </>
+          )}
         </nav>
         <div className="app-user">
           {user !== null && <span>{user.full_name}</span>}

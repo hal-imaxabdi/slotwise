@@ -4,11 +4,13 @@ import type {
   AdminService,
   Appointment,
   AuthOut,
+  BusinessHour,
   ChangePasswordInput,
   ChangePasswordResult,
   CreateAdminServiceInput,
   CreateAppointmentInput,
   CreateStaffAppointmentInput,
+  ReplaceBusinessHoursInput,
   Service,
   SlotsResponse,
   StaffAppointment,
@@ -174,5 +176,21 @@ export function deactivateAdminService(id: string): Promise<AdminService> {
 export function activateAdminService(id: string): Promise<AdminService> {
   return request<AdminService>(`/admin/services/${encodeURIComponent(id)}/activate`, {
     method: 'POST',
+  });
+}
+
+/** Admin-only. Every interval for the whole week, ordered by weekday then opening time. */
+export function listBusinessHours(signal?: AbortSignal): Promise<BusinessHour[]> {
+  return request<BusinessHour[]>('/admin/business-hours', { signal });
+}
+
+/** Admin-only. Replaces one weekday and returns the whole week's intervals. */
+export function replaceBusinessHours(
+  weekday: number,
+  input: ReplaceBusinessHoursInput,
+): Promise<BusinessHour[]> {
+  return request<BusinessHour[]>(`/admin/business-hours/${String(weekday)}`, {
+    method: 'PUT',
+    body: input,
   });
 }

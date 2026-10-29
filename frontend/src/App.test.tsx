@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getSlots, listAdminServices, listMyAppointments, listServices, logout, me } from './api/endpoints.ts';
+import { getSlots, listAdminServices, listBusinessHours, listMyAppointments, listServices, logout, me } from './api/endpoints.ts';
 import { UnauthorizedError } from './api/errors.ts';
 import type { Service } from './api/types.ts';
 import App from './App.tsx';
@@ -122,5 +122,24 @@ describe('App admin routing', () => {
     expect(await screen.findByRole('heading', { name: 'Not allowed' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Admin', level: 1 })).not.toBeInTheDocument();
     expect(listAdminServices).not.toHaveBeenCalled();
+  });
+});
+
+describe('App business-hours routing', () => {
+  it('shows the business hours page to an admin', async () => {
+    vi.mocked(me).mockResolvedValue({ ...AUTH, user: { ...AUTH.user, role: 'admin' } });
+    vi.mocked(listBusinessHours).mockResolvedValue([]);
+    renderApp('/admin/business-hours');
+    expect(
+      await screen.findByRole('heading', { name: 'Business hours', level: 1 }),
+    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Weekly hours' })).toBeInTheDocument();
+  });
+
+  it('keeps a customer off business hours', async () => {
+    vi.mocked(me).mockResolvedValue(AUTH);
+    renderApp('/admin/business-hours');
+    expect(await screen.findByRole('heading', { name: 'Not allowed' })).toBeInTheDocument();
+    expect(listBusinessHours).not.toHaveBeenCalled();
   });
 });

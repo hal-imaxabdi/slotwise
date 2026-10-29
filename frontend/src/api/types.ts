@@ -104,3 +104,20 @@ export interface CreateAdminServiceInput {
 
 /** Send only the fields that changed. Never send null: the server rejects it. */
 export type UpdateAdminServiceInput = Partial<CreateAdminServiceInput>;
+
+/** One open interval, in minutes after midnight (Asia/Jakarta), on a 30-minute grid. */
+export interface BusinessInterval {
+  open_minute: number;
+  close_minute: number;
+}
+
+/** weekday: 0 = Monday ... 6 = Sunday. */
+export interface BusinessHour extends BusinessInterval {
+  id: string;
+  weekday: number;
+}
+
+/** Replaces one weekday. An empty list closes the day. At most 8 intervals. */
+export interface ReplaceBusinessHoursInput {
+  intervals: BusinessInterval[];
+}
