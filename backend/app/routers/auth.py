@@ -3,6 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app import throttle
@@ -10,7 +11,8 @@ from app.config import settings
 from app.database import get_db
 from app.deps import get_current_session, get_now, require_csrf
 from app.models import User, UserSession
-from app.schemas import AuthOut, LoginIn, UserOut
+from app.models.user import Role
+from app.schemas import AuthOut, LoginIn, RegisterIn, UserOut
 from app.security.passwords import dummy_verify, hash_password, needs_rehash, verify_password
 from app.sessions import (
     create_session,
@@ -57,6 +59,18 @@ def _clear_cookie(response: Response) -> None:
     )
 
 
+def _set_session_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        key=settings.session_cookie_name,
+        value=token,
+        max_age=settings.session_ttl_hours * 3600,
+        httponly=True,
+        secure=settings.cookie_secure,
+        samesite=settings.cookie_samesite,
+        path="/",
+    )
+
+
 def _fail_login(db: Session, keys: list[throttle.Key], now: datetime):
     # Commit BEFORE raising: otherwise the rollback would erase the failure count.
     throttle.record_failure(db, keys, now)
@@ -94,15 +108,60 @@ def login(
     new = create_session(db, user.id, now=now)
     db.commit()
 
-    response.set_cookie(
-        key=settings.session_cookie_name,
-        value=new.token,
-        max_age=settings.session_ttl_hours * 3600,
-        httponly=True,
-        secure=settings.cookie_secure,
-        samesite=settings.cookie_samesite,
-        path="/",
+    _set_session_cookie(response, new.token)
+    return AuthOut(user=UserOut.model_validate(user), csrf_token=new.csrf_token)
+
+
+EMAIL_TAKEN = HTTPException(status_code=409, detail="An account with this email already exists")
+
+
+@router.post("/register", response_model=AuthOut, status_code=201)
+def register(
+    body: RegisterIn,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+    now: datetime = Depends(get_now),
+):
+    """Public sign-up. Always creates a customer and signs the new user in.
+
+    Every attempt counts against a per-IP limit (the existing login throttle, under a
+    "register:" key), so the endpoint cannot be used to mass-create accounts or to burn
+    CPU on password hashing.
+    """
+    keys: list[throttle.Key] = [("ip", f"register:{_client_ip(request)}")]
+    wait = throttle.lock_remaining_seconds(db, keys, now)
+    if wait:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many sign-up attempts. Try again later.",
+            headers={"Retry-After": str(wait)},
+        )
+    # Commit the count BEFORE doing the work: a later rollback must not erase it.
+    throttle.record_failure(db, keys, now)
+    db.commit()
+
+    if db.scalar(select(User.id).where(User.email == body.email)) is not None:
+        raise EMAIL_TAKEN
+
+    user = User(
+        email=body.email,
+        full_name=body.full_name,
+        password_hash=hash_password(body.password),
+        role=Role.CUSTOMER.value,
     )
+    db.add(user)
+    try:
+        db.flush()
+    except IntegrityError:
+        # Two sign-ups with the same email at the same moment: the unique index decides.
+        db.rollback()
+        raise EMAIL_TAKEN from None
+
+    new = create_session(db, user.id, now=now)
+    db.commit()
+
+    _set_session_cookie(response, new.token)
     return AuthOut(user=UserOut.model_validate(user), csrf_token=new.csrf_token)
 
 

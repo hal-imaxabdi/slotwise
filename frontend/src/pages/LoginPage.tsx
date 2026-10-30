@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { Navigate, useLocation } from 'react-router';
+import { Link, Navigate, useLocation } from 'react-router';
 import { describeApiError } from '../api/describeError.ts';
 import { useAuth } from '../auth/useAuth.ts';
-import { BrandMark, CheckIcon } from '../components/icons.tsx';
+import { BrandMark } from '../components/icons.tsx';
 import { safeRedirectPath } from './loginRedirect.ts';
 
 export function LoginPage() {
@@ -50,33 +50,13 @@ export function LoginPage() {
 
   return (
     <main className="auth-main">
-      <div className="auth-aside">
-        <span className="brand">
+      <div className="auth-panel">
+        <span className="brand auth-brand">
           <BrandMark className="brand-mark" />
           Slotwise
         </span>
-        <div>
-          <p className="auth-pitch">Appointments without the back-and-forth.</p>
-          <ul className="auth-points">
-            <li>
-              <CheckIcon />
-              <span>See which times are free before you commit.</span>
-            </li>
-            <li>
-              <CheckIcon />
-              <span>Cancel or reschedule from one place.</span>
-            </li>
-            <li>
-              <CheckIcon />
-              <span>Staff keep the schedule in sync automatically.</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div className="auth-panel">
         <div className="card auth-card">
-          <h1>Sign in to Slotwise</h1>
-          <p className="card-lead">Use the email and password for your account.</p>
+          <h1>Sign in</h1>
           <form
             className="form-stack"
             onSubmit={(event) => {
@@ -123,6 +103,9 @@ export function LoginPage() {
             </button>
           </form>
         </div>
+        <p className="auth-switch">
+          New here? <Link to="/register">Create an account</Link>
+        </p>
       </div>
     </main>
   );

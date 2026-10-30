@@ -9,6 +9,7 @@ import { BookingPage } from './pages/BookingPage.tsx';
 import { BusinessHoursPage } from './pages/BusinessHoursPage.tsx';
 import { ClosuresPage } from './pages/ClosuresPage.tsx';
 import { LoginPage } from './pages/LoginPage.tsx';
+import { RegisterPage } from './pages/RegisterPage.tsx';
 import { ServicesPage } from './pages/ServicesPage.tsx';
 import { StaffPage } from './pages/StaffPage.tsx';
 
@@ -19,6 +20,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route index element={<Navigate to="/services" replace />} />

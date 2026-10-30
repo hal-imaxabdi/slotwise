@@ -40,7 +40,7 @@ describe('App routing', () => {
     vi.mocked(me).mockRejectedValue(new UnauthorizedError('Not authenticated'));
     renderApp('/');
     expect(
-      await screen.findByRole('heading', { name: 'Sign in to Slotwise' }),
+      await screen.findByRole('heading', { name: 'Sign in' }),
     ).toBeInTheDocument();
   });
 
@@ -48,7 +48,7 @@ describe('App routing', () => {
     vi.mocked(me).mockRejectedValue(new UnauthorizedError('Not authenticated'));
     renderApp('/services');
     expect(
-      await screen.findByRole('heading', { name: 'Sign in to Slotwise' }),
+      await screen.findByRole('heading', { name: 'Sign in' }),
     ).toBeInTheDocument();
   });
 
@@ -102,7 +102,7 @@ describe('App routing', () => {
     renderApp('/');
     await user.click(await screen.findByRole('button', { name: 'Sign out' }));
     expect(
-      await screen.findByRole('heading', { name: 'Sign in to Slotwise' }),
+      await screen.findByRole('heading', { name: 'Sign in' }),
     ).toBeInTheDocument();
   });
 });

@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { describeApiError } from '../api/describeError.ts';
-import { login as apiLogin, logout as apiLogout, me } from '../api/endpoints.ts';
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  me,
+  register as apiRegister,
+} from '../api/endpoints.ts';
 import { UnauthorizedError } from '../api/errors.ts';
 import { AuthContext } from './context.ts';
 import type { AuthContextValue, AuthState } from './context.ts';
@@ -47,6 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ status: 'authenticated', user: auth.user, error: null });
   }, []);
 
+  const register = useCallback(async (fullName: string, email: string, password: string) => {
+    const auth = await apiRegister(fullName, email, password);
+    setState({ status: 'authenticated', user: auth.user, error: null });
+  }, []);
+
   const logout = useCallback(async () => {
     await apiLogout();
     setState({ status: 'anonymous', user: null, error: null });
@@ -58,8 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ ...state, login, logout, retry }),
-    [state, login, logout, retry],
+    () => ({ ...state, login, register, logout, retry }),
+    [state, login, register, logout, retry],
   );
 
   return <AuthContext value={value}>{children}</AuthContext>;

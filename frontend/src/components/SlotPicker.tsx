@@ -7,6 +7,20 @@ import { CalendarOffIcon, ClockIcon } from './icons.tsx';
 type State =
   { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; data: SlotsResponse };
 
+// Groups slots by the hour of their business-local time ("HH:MM").
+function groupSlots(slots: Slot[]): { label: string; slots: Slot[] }[] {
+  const groups = [
+    { label: 'Morning', slots: [] as Slot[] },
+    { label: 'Afternoon', slots: [] as Slot[] },
+    { label: 'Evening', slots: [] as Slot[] },
+  ];
+  for (const slot of slots) {
+    const hour = Number(slot.local_time.slice(0, 2));
+    groups[hour < 12 ? 0 : hour < 17 ? 1 : 2].slots.push(slot);
+  }
+  return groups.filter((g) => g.slots.length > 0);
+}
+
 interface SlotPickerProps {
   serviceId: string;
   date: string;
@@ -86,22 +100,27 @@ export function SlotPicker({
             <ClockIcon className="icon" />
             {`Times are in ${state.data.timezone}.`}
           </p>
-          <ul className="slot-list" aria-label="Available times">
-            {state.data.slots.map((slot) => (
-              <li key={slot.starts_at}>
-                <button
-                  type="button"
-                  aria-pressed={selected === slot.starts_at}
-                  disabled={disabled}
-                  onClick={() => {
-                    onSelect(slot);
-                  }}
-                >
-                  {slot.local_time}
-                </button>
-              </li>
-            ))}
-          </ul>
+          {groupSlots(state.data.slots).map((group) => (
+            <div key={group.label} className="slot-group">
+              <h3 className="slot-group__title">{group.label}</h3>
+              <ul className="slot-list" aria-label={`${group.label} times`}>
+                {group.slots.map((slot) => (
+                  <li key={slot.starts_at}>
+                    <button
+                      type="button"
+                      aria-pressed={selected === slot.starts_at}
+                      disabled={disabled}
+                      onClick={() => {
+                        onSelect(slot);
+                      }}
+                    >
+                      {slot.local_time}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </>
       )}
     </div>

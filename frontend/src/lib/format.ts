@@ -27,3 +27,26 @@ const LONG_DATE = new Intl.DateTimeFormat('en-US', {
 export function formatLongDate(isoDate: string): string {
   return LONG_DATE.format(new Date(`${isoDate}T00:00:00Z`));
 }
+
+// Plain calendar-date arithmetic on "YYYY-MM-DD" strings, done in UTC so the
+// browser's local time zone can never shift the result.
+export function addDays(isoDate: string, days: number): string {
+  const d = new Date(`${isoDate}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+const SHORT_WEEKDAY = new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'UTC' });
+const SHORT_DAY_MONTH = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'short',
+  timeZone: 'UTC',
+});
+
+export function formatWeekdayShort(isoDate: string): string {
+  return SHORT_WEEKDAY.format(new Date(`${isoDate}T00:00:00Z`));
+}
+
+export function formatDayMonthShort(isoDate: string): string {
+  return SHORT_DAY_MONTH.format(new Date(`${isoDate}T00:00:00Z`));
+}

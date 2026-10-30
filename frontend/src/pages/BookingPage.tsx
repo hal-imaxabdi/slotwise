@@ -5,11 +5,18 @@ import { describeApiError } from '../api/describeError.ts';
 import { createAppointment } from '../api/endpoints.ts';
 import { ApiError } from '../api/errors.ts';
 import type { Slot } from '../api/types.ts';
-import { CheckCircleIcon, ChevronLeftIcon } from '../components/icons.tsx';
+import { CalendarIcon, CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon } from '../components/icons.tsx';
 import { SlotPicker } from '../components/SlotPicker.tsx';
 import { useServices } from '../hooks/useServices.ts';
 import { todayInJakarta } from '../lib/dates.ts';
-import { formatDuration, formatIdr, formatLongDate } from '../lib/format.ts';
+import {
+  addDays,
+  formatDayMonthShort,
+  formatDuration,
+  formatIdr,
+  formatLongDate,
+  formatWeekdayShort,
+} from '../lib/format.ts';
 
 const NOTES_MAX = 500;
 const BUSINESS_TIMEZONE = 'Asia/Jakarta';
@@ -25,6 +32,7 @@ export function BookingPage() {
   const { state, retry } = useServices();
   const [today] = useState(() => todayInJakarta());
   const [date, setDate] = useState(today);
+  const [stripStart, setStripStart] = useState(today);
   const [slot, setSlot] = useState<Slot | null>(null);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -66,11 +74,25 @@ export function BookingPage() {
 
   const dateOk = date >= today;
 
-  function handleDateChange(event: ChangeEvent<HTMLInputElement>) {
-    setDate(event.target.value);
+  function chooseDate(next: string) {
+    setDate(next);
     setSlot(null);
     setSubmitError(null);
   }
+
+  function handleDateChange(event: ChangeEvent<HTMLInputElement>) {
+    const next = event.target.value;
+    chooseDate(next);
+    if (next >= today) {
+      // Keep the day strip around the chosen date.
+      const inStrip = next >= stripStart && next <= addDays(stripStart, 6);
+      if (!inStrip) {
+        setStripStart(next);
+      }
+    }
+  }
+
+  const stripDays = Array.from({ length: 7 }, (_, i) => addDays(stripStart, i));
 
   function handleSelect(chosen: Slot) {
     setSlot(chosen);
@@ -118,6 +140,17 @@ export function BookingPage() {
         <CheckCircleIcon className="confirmed-icon" />
         <h1>Booking confirmed</h1>
         <p>{`${booked.serviceName} on ${booked.date} at ${booked.time} (${BUSINESS_TIMEZONE}).`}</p>
+        <dl className="booking-details confirmed-details">
+          <dt>Service</dt>
+          <dd>{booked.serviceName}</dd>
+          <dt>Date</dt>
+          <dd>{formatLongDate(booked.date)}</dd>
+          <dt>Time</dt>
+          <dd>{`${booked.time} (${BUSINESS_TIMEZONE})`}</dd>
+          <dt>Price</dt>
+          <dd>{formatIdr(service.price_idr)}</dd>
+        </dl>
+        <p className="hint">You can cancel or reschedule up to 24 hours before the start time.</p>
         <div className="btn-row">
           <Link to="/appointments" className="btn btn--primary">
             My appointments
@@ -160,83 +193,152 @@ export function BookingPage() {
           Confirm
         </li>
       </ol>
-      <div className="card">
-        <div className="field date-field">
-          <label htmlFor="booking-date">Date</label>
-          <input
-            id="booking-date"
-            type="date"
-            min={today}
-            value={date}
-            disabled={submitting}
-            onChange={handleDateChange}
-          />
-        </div>
-        {date === '' && <p className="hint">Choose a date to see available times.</p>}
-        {date !== '' && !dateOk && (
-          <p role="alert" className="alert alert--warning">
-            Choose today or a later date.
-          </p>
-        )}
-      </div>
-      {submitError !== null && (
-        <p role="alert" className="alert alert--error">
-          {submitError}
-        </p>
-      )}
-      {dateOk && (
-        <div className="card">
-          <h2 className="card-title">Pick a time</h2>
-          <p className="card-lead">{formatLongDate(date)}</p>
-          <SlotPicker
-            key={`${service.id}:${date}:${refreshKey}`}
-            serviceId={service.id}
-            date={date}
-            selected={slot === null ? null : slot.starts_at}
-            onSelect={handleSelect}
-            disabled={submitting}
-          />
-        </div>
-      )}
-      {slot !== null && (
-        <form
-          className="card booking-form"
-          aria-label="Booking details"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void handleSubmit();
-          }}
-        >
-          <p role="status">{`Selected time: ${slot.local_time}`}</p>
-          <dl className="booking-details">
-            <dt>Service</dt>
-            <dd>{service.name}</dd>
-            <dt>Date</dt>
-            <dd>{formatLongDate(date)}</dd>
-            <dt>Duration</dt>
-            <dd>{formatDuration(service.duration_minutes)}</dd>
-            <dt>Price</dt>
-            <dd>{formatIdr(service.price_idr)}</dd>
-          </dl>
-          <div className="field">
-            <label htmlFor="booking-notes">Notes (optional)</label>
-            <textarea
-              id="booking-notes"
-              rows={3}
-              maxLength={NOTES_MAX}
-              value={notes}
-              disabled={submitting}
-              onChange={(event) => {
-                setNotes(event.target.value);
-              }}
-            />
-            <p className="char-count booking-count">{`${notes.length}/${NOTES_MAX}`}</p>
+      <div className="booking-layout">
+        <div className="booking-main">
+          <div className="card">
+            <div className="date-head">
+              <h2 className="card-title">Choose a date</h2>
+              <div className="week-nav">
+                <button
+                  type="button"
+                  className="btn--icon"
+                  aria-label="Previous week"
+                  disabled={submitting || stripStart <= today}
+                  onClick={() => {
+                    const prev = addDays(stripStart, -7);
+                    setStripStart(prev < today ? today : prev);
+                  }}
+                >
+                  <ChevronLeftIcon className="icon" />
+                </button>
+                <button
+                  type="button"
+                  className="btn--icon"
+                  aria-label="Next week"
+                  disabled={submitting}
+                  onClick={() => {
+                    setStripStart(addDays(stripStart, 7));
+                  }}
+                >
+                  <ChevronRightIcon className="icon" />
+                </button>
+              </div>
+            </div>
+            <ul className="day-strip" aria-label="Days">
+              {stripDays.map((day) => (
+                <li key={day}>
+                  <button
+                    type="button"
+                    aria-pressed={day === date}
+                    disabled={submitting}
+                    onClick={() => {
+                      chooseDate(day);
+                    }}
+                  >
+                    <span className="day-strip__wd">{formatWeekdayShort(day)}</span>
+                    <span className="day-strip__dm">{formatDayMonthShort(day)}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="field date-field">
+              <label htmlFor="booking-date">Date</label>
+              <input
+                id="booking-date"
+                type="date"
+                min={today}
+                value={date}
+                disabled={submitting}
+                onChange={handleDateChange}
+              />
+            </div>
+            {date === '' && <p className="hint">Choose a date to see available times.</p>}
+            {date !== '' && !dateOk && (
+              <p role="alert" className="alert alert--warning">
+                Choose today or a later date.
+              </p>
+            )}
           </div>
-          <button type="submit" className="btn btn--primary" disabled={submitting}>
-            {submitting ? 'Booking...' : 'Confirm booking'}
-          </button>
-        </form>
-      )}
+          {submitError !== null && (
+            <p role="alert" className="alert alert--error">
+              {submitError}
+            </p>
+          )}
+          {dateOk && (
+            <div className="card">
+              <h2 className="card-title">Pick a time</h2>
+              <p className="card-lead">{formatLongDate(date)}</p>
+              <SlotPicker
+                key={`${service.id}:${date}:${refreshKey}`}
+                serviceId={service.id}
+                date={date}
+                selected={slot === null ? null : slot.starts_at}
+                onSelect={handleSelect}
+                disabled={submitting}
+              />
+            </div>
+          )}
+        </div>
+        <aside className="booking-aside">
+          {slot === null ? (
+            <div className="card summary-card">
+              <h2 className="card-title">Your booking</h2>
+              <dl className="booking-details">
+                <dt>Service</dt>
+                <dd>{service.name}</dd>
+                <dt>Duration</dt>
+                <dd>{formatDuration(service.duration_minutes)}</dd>
+                <dt>Price</dt>
+                <dd>{formatIdr(service.price_idr)}</dd>
+              </dl>
+              <p className="hint">
+                <ClockIcon className="icon" /> Pick a time to continue.
+              </p>
+            </div>
+          ) : (
+            <form
+              className="card booking-form summary-card"
+              aria-label="Booking details"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void handleSubmit();
+              }}
+            >
+              <p role="status" className="selected-time">
+                <CalendarIcon className="icon" />
+                {`Selected time: ${slot.local_time}`}
+              </p>
+              <dl className="booking-details">
+                <dt>Service</dt>
+                <dd>{service.name}</dd>
+                <dt>Date</dt>
+                <dd>{formatLongDate(date)}</dd>
+                <dt>Duration</dt>
+                <dd>{formatDuration(service.duration_minutes)}</dd>
+                <dt>Price</dt>
+                <dd>{formatIdr(service.price_idr)}</dd>
+              </dl>
+              <div className="field">
+                <label htmlFor="booking-notes">Notes (optional)</label>
+                <textarea
+                  id="booking-notes"
+                  rows={3}
+                  maxLength={NOTES_MAX}
+                  value={notes}
+                  disabled={submitting}
+                  onChange={(event) => {
+                    setNotes(event.target.value);
+                  }}
+                />
+                <p className="char-count booking-count">{`${notes.length}/${NOTES_MAX}`}</p>
+              </div>
+              <button type="submit" className="btn btn--primary btn--block" disabled={submitting}>
+                {submitting ? 'Booking...' : 'Confirm booking'}
+              </button>
+            </form>
+          )}
+        </aside>
+      </div>
     </section>
   );
 }

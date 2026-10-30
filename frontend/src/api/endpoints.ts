@@ -31,6 +31,19 @@ export async function login(email: string, password: string): Promise<AuthOut> {
   return auth;
 }
 
+export async function register(
+  fullName: string,
+  email: string,
+  password: string,
+): Promise<AuthOut> {
+  const auth = await request<AuthOut>('/auth/register', {
+    method: 'POST',
+    body: { full_name: fullName, email, password },
+  });
+  setCsrfToken(auth.csrf_token);
+  return auth;
+}
+
 /** Session recovery after a page reload: also restores the in-memory CSRF token. */
 export async function me(signal?: AbortSignal): Promise<AuthOut> {
   const auth = await request<AuthOut>('/auth/me', { signal });

@@ -1,3 +1,4 @@
+import re
 import uuid
 from datetime import date, datetime
 from typing import Annotated
@@ -10,12 +11,42 @@ from pydantic import (
     StrictInt,
     StrictStr,
     StringConstraints,
+    field_validator,
 )
 
 
 class LoginIn(BaseModel):
     email: str = Field(min_length=1, max_length=254)
     password: str = Field(min_length=1, max_length=128)
+
+
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+class RegisterIn(BaseModel):
+    """Public sign-up. The role is not accepted from the client: it is always 'customer'."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    full_name: str = Field(min_length=1, max_length=120)
+    email: str = Field(min_length=3, max_length=254)
+    password: str = Field(min_length=12, max_length=128)
+
+    @field_validator("full_name")
+    @classmethod
+    def _name_not_blank(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Name must not be blank")
+        return value
+
+    @field_validator("email")
+    @classmethod
+    def _email_shape(cls, value: str) -> str:
+        value = value.strip().lower()
+        if not _EMAIL_RE.fullmatch(value):
+            raise ValueError("Enter a valid email address")
+        return value
 
 
 class UserOut(BaseModel):

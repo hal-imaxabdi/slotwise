@@ -1,47 +1,54 @@
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  --bg: #f8f7f4;
-  --surface: #ffffff;
-  --surface-2: #f3f1ec;
-  --border: #e6e6e4;
-  --border-strong: #cfcdd6;
+  /* Monochrome: near-black canvas, neutral greys, white as the one accent. */
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface-2: #1c1c1c;
+  --surface-hover: #191919;
+  --border: #262626;
+  --border-strong: #3a3a3a;
 
-  --ink: #202127;
-  --ink-hover: #34353e;
-  --muted: #66647d;
-  --lavender: #77758d;
-  --selected: #e9e6f4;
-  --purple: #6a5fa6;
-  --purple-dark: #554a8f;
-  --purple-ink: #4a4080;
+  --ink: #fafafa;
+  --ink-hover: #ffffff;
+  --muted: #a3a3a3;
+  --lavender: #8a8a8a; /* name kept so existing rules still work: it is now a mid grey */
+  --selected: #262626;
+  --selected-strong: #333333;
+  --purple: #ededed; /* the accent: off-white */
+  --purple-dark: #ffffff;
+  --purple-ink: #fafafa;
+  --on-accent: #0a0a0a;
+  --accent-ring: rgb(255 255 255 / 22%);
+  --accent-line: rgb(255 255 255 / 32%);
 
-  --success: #2e7d32;
-  --success-bg: #e6f1e7;
-  --success-line: #b9d9bb;
-  --warning: #8a5a00;
-  --warning-bg: #fff4d9;
-  --warning-line: #ebcb84;
-  --danger: #b93a34;
+  /* Status colours are grey. Only errors and destructive actions keep a muted red. */
+  --success: #e5e5e5;
+  --success-bg: #1c1c1c;
+  --success-line: #3a3a3a;
+  --warning: #d4d4d4;
+  --warning-bg: #1c1c1c;
+  --warning-line: #4a4a4a;
+  --danger: #f58a84;
   --danger-solid: #c8443e;
-  --danger-bg: #fbeae9;
-  --danger-line: #f0bdba;
+  --danger-bg: #231313;
+  --danger-line: #5c2b2b;
   --info: var(--purple-ink);
   --info-bg: var(--selected);
-  --info-line: #d3cdea;
-  --neutral: #55546a;
-  --neutral-bg: #efeeea;
-  --focus: #6a5fa6;
+  --info-line: #404040;
+  --neutral: #bdbdbd;
+  --neutral-bg: #262626;
+  --focus: #fafafa;
 
-  --font-display: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
-  --font: 'Geist', 'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, Roboto,
+  --font-display: var(--font);
+  --font: 'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, Roboto,
     'Helvetica Neue', Arial, sans-serif;
   --fs-xs: 0.8125rem;
   --fs-sm: 0.9rem;
   --fs-base: 1rem;
   --fs-lg: 1.0625rem;
-  --fs-xl: 1.75rem;
-  --fs-2xl: clamp(2.125rem, 1.5rem + 2.4vw, 3rem);
+  --fs-xl: 1.25rem;
+  --fs-2xl: clamp(1.5rem, 1.3rem + 0.8vw, 1.875rem);
 
   --s-1: 0.25rem;
   --s-2: 0.5rem;
@@ -51,13 +58,13 @@
   --s-6: 2.25rem;
   --s-7: 3.5rem;
 
-  --r-sm: 6px;
-  --r-md: 8px;
-  --r-lg: 12px;
-  --r-xl: 16px;
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  --r-xl: 14px;
   --r-pill: 999px;
-  --shadow: 0 1px 2px rgb(32 33 39 / 4%), 0 6px 18px rgb(32 33 39 / 4%);
-  --ease: 150ms ease;
+  --shadow: none;
+  --ease: 160ms ease;
 
   --content: 72rem;
 }
