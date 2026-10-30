@@ -1,20 +1,24 @@
-# 📅 Slotwise – Appointment Booking System
+# Slotwise — Appointment Booking System
 
-A modern, full-stack appointment booking platform built with React, FastAPI, and PostgreSQL. Features include customer authentication, service browsing, appointment scheduling, and dedicated staff and admin management.
+**Making appointment scheduling simpler for businesses and their customers.**
 
-#### [Features](#features) • [Getting Started](#getting-started) • [Tech Stack](#tech-stack) • [Preview](#preview)
+A full-stack appointment booking platform built with React, FastAPI, and PostgreSQL. Customers can discover services, find available time slots, and manage appointments, while staff and administrators manage bookings and business schedules.
+
+#### [Features](#features) · [Getting Started](#getting-started) · [Tech Stack](#tech-stack) · [Preview](#preview)
 
 ---
 
 ## Features
 
-- Customer registration and secure authentication
-- Browse available services and appointment slots
-- Book, cancel, and reschedule appointments
-- Staff dashboard for managing appointments and customers
-- Admin management of services and business hours
-- Unavailable period and schedule management
-- CSRF protection and origin validation
+- **Customer Authentication:** Registration, login, and secure session management.
+- **Service Browsing:** Explore available services offered by the business.
+- **Appointment Booking:** Check available time slots and book appointments.
+- **Appointment Management:** View, cancel, and reschedule bookings.
+- **Staff Dashboard:** Manage appointments, search customers, and update appointment statuses.
+- **Admin Dashboard:** Create, update, activate, and deactivate services.
+- **Business Hours Management:** Configure weekly operating hours.
+- **Unavailable Periods:** Manage business closures and unavailable time slots.
+- **Security:** CSRF protection, origin validation, and session-based authentication.
 
 ## Getting Started
 
@@ -29,7 +33,9 @@ A modern, full-stack appointment booking platform built with React, FastAPI, and
 
 2. **Configure the database**
 
-   Create a `.env` file with the required environment variables and database credentials, then start PostgreSQL:
+   Create a `.env` file in the project root with the required environment variables and PostgreSQL credentials.
+
+   Start the database using Docker Compose:
 
    ```bash
    docker compose up -d db
@@ -56,7 +62,7 @@ A modern, full-stack appointment booking platform built with React, FastAPI, and
    npm run dev
    ```
 
-## ⚙️ Tech Stack
+## Tech Stack
 
 - **Frontend:** React, TypeScript, Vite
 - **Backend:** Python, FastAPI
@@ -66,31 +72,41 @@ A modern, full-stack appointment booking platform built with React, FastAPI, and
 - **Testing:** Pytest
 - **Containerization:** Docker Compose
 
-## 📷 Preview
+## Preview
 
-### Login Page
-
-![Slotwise login Page](docs/login.png)
-
-### Customer Registration
-
-![Slotwise Registration](docs/register.png)
-
-### Customer Dashboard
-
-![Slotwise Customer Dashboard](docs/customer-dashboard.png)
-
-### Appointment Booking
-
-![Slotwise Appointment Booking](docs/booking.png)
-
-### Staff Dashboard
-
-![Slotwise Staff Dashboard](docs/staff.png)
-
-### Admin Dashboard
-
-![Slotwise Admin Dashboard](docs/admin.png)
+<table>
+  <tr>
+    <td align="center">
+      <strong>Login</strong><br><br>
+      <img src="docs/login.png" width="400" alt="Slotwise Login Page">
+    </td>
+    <td align="center">
+      <strong>Registration</strong><br><br>
+      <img src="docs/register.png" width="400" alt="Slotwise Registration Page">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Customer Dashboard</strong><br><br>
+      <img src="docs/customer-dashboard.png" width="400" alt="Slotwise Customer Dashboard">
+    </td>
+    <td align="center">
+      <strong>Appointment Booking</strong><br><br>
+      <img src="docs/booking.png" width="400" alt="Slotwise Appointment Booking">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Staff Dashboard</strong><br><br>
+      <img src="docs/staff.png" width="400" alt="Slotwise Staff Dashboard">
+    </td>
+    <td align="center">
+      <strong>Admin Dashboard</strong><br><br>
+      <img src="docs/admin.png" width="400" alt="Slotwise Admin Dashboard">
+    </td>
+  </tr>
+</table>
 
 ---
 
+**Developed by [Halima Abdirizak Mohamed](https://github.com/hal-imaxabdi)**
