@@ -107,6 +107,3 @@ A full-stack appointment booking platform built with React, FastAPI, and Postgre
   </tr>
 </table>
 
----
-
-**Developed by [Halima Abdirizak Mohamed](https://github.com/hal-imaxabdi)**
