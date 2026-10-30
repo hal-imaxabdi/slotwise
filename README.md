@@ -4,7 +4,7 @@
 
 A full-stack appointment booking platform built with React, FastAPI, and PostgreSQL. Customers can discover services, find available time slots, and manage appointments, while staff and administrators manage bookings and business schedules.
 
-#### [Features](#features) · [Getting Started](#getting-started) · [Tech Stack](#tech-stack) · [Preview](#preview) [Live demo: https://slotwise-mocha.vercel.app]
+#### [Features](#features) · [Getting Started](#getting-started) · [Tech Stack](#tech-stack) · [Preview](#preview) · [Live demo](https://slotwise-mocha.vercel.app)
 
 ---
 
