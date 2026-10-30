@@ -18,6 +18,7 @@ export function authValueFor(role: Role | null): AuthContextValue {
     user: role === null ? null : { ...AUTH.user, role },
     error: null,
     login: () => Promise.resolve(),
+    register: () => Promise.resolve(),
     logout: () => Promise.resolve(),
     retry: () => undefined,
   };
