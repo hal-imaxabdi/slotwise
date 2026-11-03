@@ -76,6 +76,12 @@ export function changePassword(input: ChangePasswordInput): Promise<ChangePasswo
   return request<ChangePasswordResult>('/auth/password', { method: 'POST', body: input });
 }
 
+/** Customers only. Erases the account; the server ends every session, so the CSRF token goes. */
+export async function deleteAccount(password: string): Promise<void> {
+  await request<void>('/auth/delete-account', { method: 'POST', body: { password } });
+  setCsrfToken(null);
+}
+
 export function listServices(signal?: AbortSignal): Promise<Service[]> {
   return request<Service[]>('/services', { signal });
 }
@@ -222,10 +228,9 @@ export function listUnavailablePeriods(
   if (params.limit !== undefined) query.set('limit', String(params.limit));
   if (params.offset !== undefined) query.set('offset', String(params.offset));
   const qs = query.toString();
-  return request<UnavailablePeriod[]>(
-    `/staff/unavailable-periods${qs === '' ? '' : `?${qs}`}`,
-    { signal },
-  );
+  return request<UnavailablePeriod[]>(`/staff/unavailable-periods${qs === '' ? '' : `?${qs}`}`, {
+    signal,
+  });
 }
 
 /** Staff and admin. 409 if active appointments overlap, 422 if off-grid or end <= start. */

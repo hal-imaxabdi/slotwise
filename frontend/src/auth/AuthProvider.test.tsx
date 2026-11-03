@@ -150,3 +150,24 @@ describe('AuthProvider', () => {
     expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
   });
 });
+
+describe('AuthProvider session check racing a login', () => {
+  it('a slow 401 from /auth/me does not undo a login that finished first', async () => {
+    let rejectMe!: (error: Error) => void;
+    vi.mocked(me).mockReturnValueOnce(
+      new Promise<AuthOut>((_resolve, reject) => {
+        rejectMe = reject;
+      }),
+    );
+    vi.mocked(login).mockResolvedValueOnce(AUTH);
+    const user = userEvent.setup();
+    renderProvider();
+    await user.click(screen.getByRole('button', { name: 'do login' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+    });
+    rejectMe(new UnauthorizedError('Not authenticated'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+  });
+});

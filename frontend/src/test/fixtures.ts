@@ -20,6 +20,8 @@ export function authValueFor(role: Role | null): AuthContextValue {
     login: () => Promise.resolve(),
     register: () => Promise.resolve(),
     logout: () => Promise.resolve(),
+    logoutAll: () => Promise.resolve(),
+    deleteAccount: () => Promise.resolve(),
     retry: () => undefined,
   };
 }

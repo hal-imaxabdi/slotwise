@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { describeApiError } from '../api/describeError.ts';
 import {
+  deleteAccount as apiDeleteAccount,
   login as apiLogin,
   logout as apiLogout,
+  logoutAll as apiLogoutAll,
   me,
   register as apiRegister,
 } from '../api/endpoints.ts';
@@ -12,6 +14,13 @@ import { AuthContext } from './context.ts';
 import type { AuthContextValue, AuthState } from './context.ts';
 
 const INITIAL: AuthState = { status: 'loading', user: null, error: null };
+const ANONYMOUS: AuthState = { status: 'anonymous', user: null, error: null };
+
+// The session check only settles a state that is still loading: a login that finished
+// first (likely while a sleeping server wakes up) must not be overwritten.
+function settle(next: AuthState) {
+  return (previous: AuthState) => (previous.status === 'loading' ? next : previous);
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(INITIAL);
@@ -28,15 +37,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (controller.signal.aborted) {
           return;
         }
-        setState({ status: 'authenticated', user: auth.user, error: null });
+        setState(settle({ status: 'authenticated', user: auth.user, error: null }));
       } catch (error) {
         if (controller.signal.aborted) {
           return;
         }
         if (error instanceof UnauthorizedError) {
-          setState({ status: 'anonymous', user: null, error: null });
+          setState(settle(ANONYMOUS));
         } else {
-          setState({ status: 'error', user: null, error: describeApiError(error) });
+          setState(settle({ status: 'error', user: null, error: describeApiError(error) }));
         }
       }
     }
@@ -59,7 +68,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await apiLogout();
-    setState({ status: 'anonymous', user: null, error: null });
+    setState(ANONYMOUS);
+  }, []);
+
+  const logoutAll = useCallback(async () => {
+    await apiLogoutAll();
+    setState(ANONYMOUS);
+  }, []);
+
+  const deleteAccount = useCallback(async (password: string) => {
+    await apiDeleteAccount(password);
+    setState(ANONYMOUS);
   }, []);
 
   const retry = useCallback(() => {
@@ -68,8 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ ...state, login, register, logout, retry }),
-    [state, login, register, logout, retry],
+    () => ({ ...state, login, register, logout, logoutAll, deleteAccount, retry }),
+    [state, login, register, logout, logoutAll, deleteAccount, retry],
   );
 
   return <AuthContext value={value}>{children}</AuthContext>;

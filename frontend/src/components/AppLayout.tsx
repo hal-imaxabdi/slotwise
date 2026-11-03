@@ -3,9 +3,9 @@ import type { MouseEvent } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { describeApiError } from '../api/describeError.ts';
 import { useAuth } from '../auth/useAuth.ts';
-import { BrandMark } from './icons.tsx';
-
-const APP_NAME = 'Slotwise';
+import { isDemoEmail } from '../lib/demoAccounts.ts';
+import { APP_NAME } from '../lib/site.ts';
+import { BrandMark, InfoIcon } from './icons.tsx';
 
 function pageTitle(pathname: string): string {
   if (pathname.startsWith('/appointments')) {
@@ -23,8 +23,14 @@ function pageTitle(pathname: string): string {
   if (pathname.startsWith('/staff')) {
     return `Staff - ${APP_NAME}`;
   }
+  if (pathname.startsWith('/admin/business-hours')) {
+    return `Business hours - ${APP_NAME}`;
+  }
   if (pathname.startsWith('/admin')) {
     return `Admin - ${APP_NAME}`;
+  }
+  if (pathname.startsWith('/account')) {
+    return `Account - ${APP_NAME}`;
   }
   return APP_NAME;
 }
@@ -103,12 +109,18 @@ export function AppLayout() {
           </nav>
           <div className="app-user">
             {user !== null && (
-              <>
+              <NavLink
+                to="/account"
+                className="app-user-link"
+                aria-label={`Account: ${user.full_name}`}
+              >
                 <span className="avatar" aria-hidden="true">
                   {initials(user.full_name)}
                 </span>
-                <span className="user-name">{user.full_name}</span>
-              </>
+                <span className="user-name" aria-hidden="true">
+                  {user.full_name}
+                </span>
+              </NavLink>
             )}
             <button
               type="button"
@@ -121,6 +133,12 @@ export function AppLayout() {
           </div>
         </div>
       </header>
+      {user !== null && isDemoEmail(user.email) && (
+        <p className="demo-banner">
+          <InfoIcon className="icon" />
+          You’re exploring a demo. Data resets regularly.
+        </p>
+      )}
       {error !== null && (
         <p role="alert" className="app-error alert alert--error">
           {error}

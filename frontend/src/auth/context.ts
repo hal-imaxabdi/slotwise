@@ -13,6 +13,10 @@ export interface AuthContextValue extends AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (fullName: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  /** Ends every session of this user, this one included. */
+  logoutAll: () => Promise<void>;
+  /** Customers only: erases the account and signs out. */
+  deleteAccount: (password: string) => Promise<void>;
   retry: () => void;
 }
 

@@ -11,6 +11,11 @@ import { AUTH } from '../test/fixtures.ts';
 import { LoginPage } from './LoginPage.tsx';
 
 vi.mock('../api/endpoints.ts');
+// Sign-in first waits for a sleeping server; here it is always awake.
+vi.mock('../api/health.ts', () => ({
+  waitForServer: () => Promise.resolve(),
+  pingHealth: () => undefined,
+}));
 
 function renderLogin(entry: string | { pathname: string; state: unknown } = '/login') {
   return render(
@@ -80,7 +85,9 @@ describe('LoginPage', () => {
   });
 
   it('tells the user how long to wait when throttled', async () => {
-    vi.mocked(login).mockRejectedValueOnce(new RateLimitError('Too many failed login attempts.', 900));
+    vi.mocked(login).mockRejectedValueOnce(
+      new RateLimitError('Too many failed login attempts.', 900),
+    );
     const user = userEvent.setup();
     renderLogin();
     await fillAndSubmit(user);
