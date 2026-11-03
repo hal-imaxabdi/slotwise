@@ -1,7 +1,9 @@
-from sqlalchemy import select
+from datetime import datetime
+
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from app.models import Role, User
+from app.models import Appointment, AppointmentStatus, Role, User
 from app.security.passwords import hash_password
 
 MIN_PASSWORD_LENGTH = 12
@@ -52,3 +54,32 @@ def create_user(db: Session, email: str, full_name: str, role: str, password: st
     db.add(user)
     db.flush()
     return user
+
+
+DELETED_PASSWORD = "!deleted-account"
+DELETED_NAME = "Deleted customer"
+
+
+def delete_customer_account(db: Session, user: User, now: datetime) -> int:
+    """Erase a customer's personal data; returns how many bookings were cancelled.
+
+    Appointments are business records (and other rows point at them), so the user row
+    stays but is anonymised and deactivated: email, name, password and booking notes go,
+    future bookings are cancelled. Sessions are revoked by the caller. Flushes only.
+    """
+    upcoming = db.execute(
+        update(Appointment)
+        .where(
+            Appointment.customer_id == user.id,
+            Appointment.status == AppointmentStatus.BOOKED.value,
+            Appointment.starts_at > now,
+        )
+        .values(status=AppointmentStatus.CANCELLED.value, cancelled_at=now, cancelled_by_id=user.id)
+    ).rowcount
+    db.execute(update(Appointment).where(Appointment.customer_id == user.id).values(notes=""))
+    user.email = f"deleted-{user.id}@deleted.invalid"
+    user.full_name = DELETED_NAME
+    user.password_hash = DELETED_PASSWORD
+    user.is_active = False
+    db.flush()
+    return upcoming

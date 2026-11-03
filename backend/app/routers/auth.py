@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app import throttle
 from app.config import settings
 from app.database import get_db
+from app.demo import is_demo_account
 from app.deps import get_current_session, get_now, require_csrf
 from app.models import User, UserSession
 from app.models.user import Role
@@ -20,10 +21,12 @@ from app.sessions import (
     revoke_others_for_user,
     revoke_session,
 )
+from app.user_admin import delete_customer_account
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 INVALID = HTTPException(status_code=401, detail="Invalid email or password")
+DEMO_FORBIDDEN = "This is a shared demo account, so this action is turned off"
 
 
 class ChangePasswordIn(BaseModel):
@@ -35,6 +38,12 @@ class ChangePasswordIn(BaseModel):
 
 class ChangePasswordOut(BaseModel):
     other_sessions_revoked: int
+
+
+class DeleteAccountIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    password: str = Field(min_length=1, max_length=128)
 
 
 def _client_ip(request: Request) -> str:
@@ -71,7 +80,10 @@ def _set_session_cookie(response: Response, token: str) -> None:
     )
 
 
-def _fail_login(db: Session, keys: list[throttle.Key], now: datetime):
+def _fail_login(db: Session, keys: list[throttle.Key], now: datetime, wait: int = 0):
+    if wait:
+        # Only reached by a demo account behind a locked IP: refuse, and don't extend the lock.
+        raise _too_many(wait)
     # Commit BEFORE raising: otherwise the rollback would erase the failure count.
     throttle.record_failure(db, keys, now)
     db.commit()
@@ -87,24 +99,31 @@ def login(
     now: datetime = Depends(get_now),
 ):
     email = body.email.strip().lower()
+    demo = is_demo_account(email)
     keys = throttle.login_keys(email, _client_ip(request))
+    if demo:
+        # The demo passwords are public, so an email lock would protect nothing and
+        # would let one visitor lock every recruiter out. Only the IP counter applies.
+        keys = [key for key in keys if key[0] == "ip"]
 
     wait = throttle.lock_remaining_seconds(db, keys, now)
-    if wait:
+    if wait and not demo:
         raise _too_many(wait)
+    # A demo account with the right (public) password still gets in from a locked IP:
+    # the IP may be a proxy shared with everyone, and nothing secret is being guessed.
 
     user = db.scalar(select(User).where(User.email == email))
 
     if user is None:
         dummy_verify(body.password)
-        _fail_login(db, keys, now)
+        _fail_login(db, keys, now, wait)
     if not verify_password(body.password, user.password_hash) or not user.is_active:
-        _fail_login(db, keys, now)
+        _fail_login(db, keys, now, wait)
 
     if needs_rehash(user.password_hash):
         user.password_hash = hash_password(body.password)
 
-    throttle.reset(db, "email", keys[0][1])
+    throttle.reset(db, "email", throttle.email_key(email))
     new = create_session(db, user.id, now=now)
     db.commit()
 
@@ -192,6 +211,9 @@ def logout_all(
     now: datetime = Depends(get_now),
 ):
     _session, user = current
+    if is_demo_account(user.email):
+        # Would sign out every other visitor using the shared account.
+        raise HTTPException(status_code=403, detail=DEMO_FORBIDDEN)
     revoke_all_for_user(db, user.id, now=now)
     db.commit()
     _clear_cookie(response)
@@ -206,6 +228,9 @@ def change_password(
     now: datetime = Depends(get_now),
 ):
     session, user = current
+    if is_demo_account(user.email):
+        # Would lock every other visitor out of the shared account until the next reset.
+        raise HTTPException(status_code=403, detail=DEMO_FORBIDDEN)
     keys = throttle.login_keys(user.email, _client_ip(request))
 
     # Same counters as login: a stolen session must not allow unlimited password guessing.
@@ -228,3 +253,38 @@ def change_password(
     revoked = revoke_others_for_user(db, user.id, keep_session_id=session.id, now=now)
     db.commit()
     return ChangePasswordOut(other_sessions_revoked=revoked)
+
+
+@router.post("/delete-account", status_code=204)
+def delete_account(
+    body: DeleteAccountIn,
+    request: Request,
+    response: Response,
+    current: tuple[UserSession, User] = Depends(require_csrf),
+    db: Session = Depends(get_db),
+    now: datetime = Depends(get_now),
+):
+    """Customers erase their own account. Needs the password, like a password change."""
+    _session, user = current
+    if is_demo_account(user.email):
+        raise HTTPException(status_code=403, detail=DEMO_FORBIDDEN)
+    if user.role != Role.CUSTOMER.value:
+        raise HTTPException(
+            status_code=403, detail="Staff accounts are removed by the business owner"
+        )
+    keys = throttle.login_keys(user.email, _client_ip(request))
+
+    wait = throttle.lock_remaining_seconds(db, keys, now)
+    if wait:
+        raise _too_many(wait)
+
+    if not verify_password(body.password, user.password_hash):
+        throttle.record_failure(db, keys, now)
+        db.commit()
+        raise HTTPException(status_code=400, detail="Password is incorrect")
+
+    throttle.reset(db, "email", keys[0][1])
+    delete_customer_account(db, user, now)
+    revoke_all_for_user(db, user.id, now=now)
+    db.commit()
+    _clear_cookie(response)
