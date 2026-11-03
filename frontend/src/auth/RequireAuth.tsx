@@ -1,4 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
+import { LoadingScreen } from '../components/LoadingScreen.tsx';
 import { useAuth } from './useAuth.ts';
 
 export function RequireAuth() {
@@ -6,11 +7,7 @@ export function RequireAuth() {
   const location = useLocation();
 
   if (auth.status === 'loading') {
-    return (
-      <p role="status" className="loading loading--page">
-        Loading...
-      </p>
-    );
+    return <LoadingScreen />;
   }
   if (auth.status === 'error') {
     return (
