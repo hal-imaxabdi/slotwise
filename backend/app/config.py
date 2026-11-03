@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     # Browser origins allowed to make state-changing requests (comma-separated).
     allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
+    # Public portfolio demo: published staff/admin passwords and resettable data.
+    # Never enable on a deployment with real customers.
+    demo_mode: bool = False
+
     model_config = SettingsConfigDict(env_file=ENV_FILE, extra="ignore")
 
     @property

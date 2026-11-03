@@ -12,6 +12,13 @@ from app.config import settings  # adjust if your names differ
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
 
+@pytest.fixture(autouse=True)
+def demo_mode_off(monkeypatch):
+    """A DEMO_MODE=true in the developer's .env must never leak into tests
+    (reset_demo would wipe data). Tests that need it opt in explicitly."""
+    monkeypatch.setattr(settings, "demo_mode", False)
+
+
 @pytest.fixture(scope="session")
 def test_db_url() -> str:
     """Create/reset `<dev_db>_test`, run all migrations on it, return its URL.

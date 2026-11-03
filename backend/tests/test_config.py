@@ -9,7 +9,7 @@ DB_URL = "postgresql+psycopg://u:p@localhost:5432/x"
 @pytest.fixture(autouse=True)
 def clean_env(monkeypatch):
     # Stop real environment variables leaking into these tests.
-    for name in ("ENVIRONMENT", "COOKIE_SECURE", "DATABASE_URL"):
+    for name in ("ENVIRONMENT", "COOKIE_SECURE", "DATABASE_URL", "DEMO_MODE"):
         monkeypatch.delenv(name, raising=False)
 
 
@@ -55,3 +55,11 @@ def test_production_via_env_vars_passes_with_secure_cookie(monkeypatch):
     monkeypatch.setenv("COOKIE_SECURE", "true")
     assert make().environment == "production"
     
+
+def test_demo_mode_is_off_by_default():
+    assert make().demo_mode is False
+
+
+def test_demo_mode_is_read_from_the_environment(monkeypatch):
+    monkeypatch.setenv("DEMO_MODE", "true")
+    assert make().demo_mode is True
