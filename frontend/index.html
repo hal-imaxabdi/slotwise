@@ -2,19 +2,62 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0a0a0a" />
-    <meta name="description" content="Slotwise: book, change and manage appointments online." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
     <title>Slotwise</title>
+    <meta
+      name="description"
+      content="Slotwise gives appointment-based businesses a booking page clients love and one calendar the whole team can trust, with no double bookings. Try the live demo, no sign-up needed."
+    />
+    <meta name="theme-color" content="#7a1e2c" />
+    <meta name="color-scheme" content="light" />
+    <meta name="author" content="hal-imaxabdi" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link
+      rel="preload"
+      href="/fonts/schibsted-grotesk-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Slotwise" />
+    <meta property="og:title" content="Slotwise: online booking for barbershops, salons and studios" />
+    <meta
+      property="og:description"
+      content="A booking page your clients love and one calendar your team can trust. Explore the live demo as a client, staff member or owner."
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Slotwise: online booking for barbershops, salons and studios"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!-- seo:absolute (canonical, og:url and og:image, added at build when VITE_SITE_URL is set) -->
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Slotwise",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "description": "Online booking for appointment-based businesses: a client booking page, a staff calendar, owner controls for services, hours and closures, and no double bookings.",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "author": { "@type": "Person", "name": "hal-imaxabdi", "url": "https://github.com/hal-imaxabdi" },
+        "codeRepository": "https://github.com/hal-imaxabdi/slotwise"
+      }
+    </script>
   </head>
   <body>
+    <noscript>
+      Slotwise is online booking for barbershops, salons and studios. Please enable JavaScript
+      to use it.
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
