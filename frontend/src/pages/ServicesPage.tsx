@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { useServices } from '../hooks/useServices.ts';
 import { ClockIcon } from '../components/icons.tsx';
 import { formatDuration, formatIdr } from '../lib/format.ts';
+import { serviceImage } from '../lib/serviceImages.ts';
 
 export function ServicesPage() {
   const { state, retry } = useServices();
@@ -46,6 +47,15 @@ export function ServicesPage() {
         <ul className="service-list">
           {state.services.map((service) => (
             <li key={service.id} className="service-card">
+              <img
+                className="service-photo"
+                src={serviceImage(service.name)}
+                alt=""
+                width={640}
+                height={440}
+                loading="lazy"
+                decoding="async"
+              />
               <h2>{service.name}</h2>
               <p className="service-desc">{service.description}</p>
               <p className="service-meta">

@@ -5,10 +5,17 @@ import { describeApiError } from '../api/describeError.ts';
 import { createAppointment } from '../api/endpoints.ts';
 import { ApiError } from '../api/errors.ts';
 import type { Slot } from '../api/types.ts';
-import { CalendarIcon, CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon } from '../components/icons.tsx';
+import {
+  CalendarIcon,
+  CheckCircleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ClockIcon,
+} from '../components/icons.tsx';
 import { SlotPicker } from '../components/SlotPicker.tsx';
 import { useServices } from '../hooks/useServices.ts';
 import { todayInJakarta } from '../lib/dates.ts';
+import { serviceImage } from '../lib/serviceImages.ts';
 import {
   addDays,
   formatDayMonthShort,
@@ -176,7 +183,14 @@ export function BookingPage() {
         <ChevronLeftIcon className="icon" />
         Back to services
       </Link>
-      <div className="page-header">
+      <div className="page-header booking-head">
+        <img
+          className="booking-thumb"
+          src={serviceImage(service.name)}
+          alt=""
+          width={640}
+          height={440}
+        />
         <div>
           <h1>{`Book ${service.name}`}</h1>
           <p className="booking-summary">{`${formatDuration(service.duration_minutes)} - ${formatIdr(service.price_idr)}`}</p>
