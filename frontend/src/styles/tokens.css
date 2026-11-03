@@ -1,54 +1,101 @@
+/* Self-hosted fonts (SIL OFL, licences in /fonts): no request ever goes to a font CDN. */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 400 800;
+  font-stretch: 75% 100%;
+  font-display: swap;
+  src: url('/fonts/bricolage-grotesque-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Schibsted Grotesk';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/schibsted-grotesk-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2');
+}
+
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* Monochrome: near-black canvas, neutral greys, white as the one accent. */
-  --bg: #0a0a0a;
-  --surface: #141414;
-  --surface-2: #1c1c1c;
-  --surface-hover: #191919;
-  --border: #262626;
-  --border-strong: #3a3a3a;
+  /* The appointment book: cream ledger paper, maroon bookcloth and ruling, black ink.
+     Every text colour below passes WCAG AA (4.5:1) on --surface, --bg and --cream. */
+  --bg: #faf6f0;
+  --surface: #ffffff;
+  --surface-2: #f3ece1;
+  --surface-hover: #fdfaf5;
+  --border: #e7dccb;
+  --border-strong: #d4c4ad;
 
-  --ink: #fafafa;
-  --ink-hover: #ffffff;
-  --muted: #a3a3a3;
-  --lavender: #8a8a8a; /* name kept so existing rules still work: it is now a mid grey */
-  --selected: #262626;
-  --selected-strong: #333333;
-  --purple: #ededed; /* the accent: off-white */
-  --purple-dark: #ffffff;
-  --purple-ink: #fafafa;
-  --on-accent: #0a0a0a;
-  --accent-ring: rgb(255 255 255 / 22%);
-  --accent-line: rgb(255 255 255 / 32%);
+  --cream: #f5eee3;
+  --cream-2: #ecdfcb;
+  --rule: #e3cdbf;
 
-  /* Status colours are grey. Only errors and destructive actions keep a muted red. */
-  --success: #e5e5e5;
-  --success-bg: #1c1c1c;
-  --success-line: #3a3a3a;
-  --warning: #d4d4d4;
-  --warning-bg: #1c1c1c;
-  --warning-line: #4a4a4a;
-  --danger: #f58a84;
-  --danger-solid: #c8443e;
-  --danger-bg: #231313;
-  --danger-line: #5c2b2b;
-  --info: var(--purple-ink);
-  --info-bg: var(--selected);
-  --info-line: #404040;
-  --neutral: #bdbdbd;
-  --neutral-bg: #262626;
-  --focus: #fafafa;
+  --ink: #17120f;
+  --ink-hover: #000000;
+  --muted: #5c4f47;
+  --subtle: #6e6158;
 
-  --font-display: var(--font);
-  --font: 'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, Roboto,
-    'Helvetica Neue', Arial, sans-serif;
+  --accent: #7a1e2c;
+  --accent-strong: #5b1420;
+  --accent-ink: #4a0f1a;
+  --accent-soft: #f6e7e4;
+  --accent-soft-strong: #ecd1cc;
+  --on-accent: #ffffff;
+  --accent-ring: rgb(122 30 44 / 22%);
+  --accent-line: rgb(122 30 44 / 40%);
+  --highlight: #c9a227;
+  --highlight-ink: #6b5310;
+  --highlight-soft: #f7efd6;
+  --dark: #17120f;
+  --on-dark-muted: #c9bdb2;
+  --on-maroon-muted: #e9cfc9;
+
+  /* Old names, still used by component rules: they map onto the palette above. */
+  --lavender: var(--subtle);
+  --selected: var(--accent-soft);
+  --selected-strong: var(--accent-soft-strong);
+  --purple: var(--accent);
+  --purple-dark: var(--accent-strong);
+  --purple-ink: var(--accent-ink);
+
+  --success: #1f6b3a;
+  --success-bg: #eef6ee;
+  --success-line: #c4dfc8;
+  --warning: #8a5a00;
+  --warning-bg: #fff7e6;
+  --warning-line: #f6d9a0;
+  --danger: #c0262d;
+  --danger-solid: #c0262d;
+  --danger-solid-hover: #a01f25;
+  --danger-bg: #fdf0f0;
+  --danger-line: #f4c5c7;
+  --info: var(--accent-ink);
+  --info-bg: var(--accent-soft);
+  --info-line: var(--accent-soft-strong);
+  --neutral: #5c4f47;
+  --neutral-bg: #f1ebe2;
+  --focus: #7a1e2c;
+
+  --font: 'Schibsted Grotesk', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-display: 'Bricolage Grotesque', var(--font);
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   --fs-xs: 0.8125rem;
   --fs-sm: 0.9rem;
   --fs-base: 1rem;
-  --fs-lg: 1.0625rem;
+  --fs-lg: 1.125rem;
   --fs-xl: 1.25rem;
-  --fs-2xl: clamp(1.5rem, 1.3rem + 0.8vw, 1.875rem);
+  --fs-2xl: clamp(1.6rem, 1.35rem + 0.9vw, 2rem);
+  --fs-hero: clamp(2.4rem, 1.5rem + 3.6vw, 4.25rem);
+  --fs-section: clamp(1.7rem, 1.4rem + 1.3vw, 2.4rem);
 
   --s-1: 0.25rem;
   --s-2: 0.5rem;
@@ -57,14 +104,18 @@
   --s-5: 1.5rem;
   --s-6: 2.25rem;
   --s-7: 3.5rem;
+  --s-8: 5.5rem;
 
   --r-sm: 4px;
-  --r-md: 6px;
-  --r-lg: 10px;
-  --r-xl: 14px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 22px;
   --r-pill: 999px;
-  --shadow: none;
+  --shadow: 0 1px 2px rgb(60 30 20 / 6%), 0 3px 8px -2px rgb(60 30 20 / 5%);
+  --shadow-md: 0 2px 4px rgb(60 30 20 / 6%), 0 14px 30px -8px rgb(60 30 20 / 14%);
+  --shadow-lg: 0 4px 10px rgb(60 30 20 / 6%), 0 30px 70px -16px rgb(60 30 20 / 26%);
   --ease: 160ms ease;
 
   --content: 72rem;
+  --header-bg: rgb(250 246 240 / 88%);
 }

@@ -13,7 +13,7 @@
 /* The Book button is the card's primary action: lavender outline, fills on hover and focus. */
 .service-card .btn--primary { min-height: 2.75rem; color: var(--purple); background: transparent; border-color: var(--accent-line); font-weight: 600; }
 .service-card .btn--primary:hover:not(:disabled), .service-card .btn--primary:focus-visible { color: var(--on-accent); background: var(--purple); border-color: var(--purple); }
-.skeleton-card { height: 13.5rem; }
+.skeleton-card { height: 24rem; }
 
 @media (max-width: 980px) {
   .service-list, .skeleton-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -24,7 +24,29 @@
 }
 
 /* Booking flow */
-.booking { max-width: 46rem; margin: 0 auto; }
+.booking { max-width: 64rem; margin: 0 auto; }
+.booking-layout { display: grid; grid-template-columns: minmax(0, 1fr) 20rem; gap: var(--s-5); align-items: start; }
+.booking-main { display: grid; gap: var(--s-4); min-width: 0; }
+.booking-main > .alert { margin: 0; }
+.booking-aside { position: sticky; top: 5.5rem; }
+.summary-card .card-title { margin-bottom: var(--s-3); }
+.summary-card .hint { display: flex; align-items: center; gap: var(--s-2); margin: var(--s-3) 0 0; }
+.selected-time { display: flex; align-items: center; gap: var(--s-2); }
+.selected-time .icon { color: var(--accent); }
+.confirmed-details { text-align: left; }
+
+.date-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); margin-bottom: var(--s-4); }
+.date-head .card-title { margin: 0; }
+.week-nav { display: flex; gap: var(--s-2); }
+.btn--icon { width: 2.5rem; padding: 0; }
+.day-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--s-2); margin: 0 0 var(--s-4); list-style: none; }
+.day-strip button { display: grid; justify-items: center; gap: 0.1rem; width: 100%; min-height: 3.75rem; padding: var(--s-2) var(--s-1); font-variant-numeric: tabular-nums; }
+.day-strip__wd { color: var(--muted); font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.day-strip__dm { font-size: var(--fs-sm); font-weight: 700; }
+.day-strip button[aria-pressed='true'] { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
+.day-strip button[aria-pressed='true'] .day-strip__wd { color: rgb(255 255 255 / 80%); }
+.slot-group + .slot-group { margin-top: var(--s-4); }
+.slot-group__title { margin: 0 0 var(--s-2); color: var(--muted); font-size: var(--fs-sm); font-weight: 600; }
 .booking-summary { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); margin: var(--s-2) 0 0; color: var(--muted); }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); margin: 0 0 var(--s-5); padding: 0; list-style: none; counter-reset: step; }
 .steps li { display: flex; align-items: center; gap: var(--s-2); padding-top: var(--s-3); border-top: 2px solid var(--border); color: var(--muted); font-size: var(--fs-sm); font-weight: 500; counter-increment: step; }
@@ -142,6 +164,8 @@
 .hours-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 
 @media (max-width: 900px) {
+  .booking-layout { grid-template-columns: 1fr; }
+  .booking-aside { position: static; }
   .closures-layout { grid-template-columns: 1fr; }
   .closures-layout .card { position: static; }
   .staff-top { grid-template-columns: 1fr; }
@@ -149,6 +173,7 @@
 }
 @media (max-width: 560px) {
   .card, .service-card { padding: var(--s-4); }
+  .day-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .steps { gap: var(--s-1); }
   .steps li { flex-direction: column; align-items: flex-start; gap: var(--s-1); font-size: var(--fs-xs); }
   .hours-grid { grid-template-columns: 1fr; }
@@ -157,4 +182,15 @@
   .closure-list > li { grid-template-columns: 1fr; }
   .closure-list > li > button { grid-column: 1; grid-row: auto; justify-self: start; }
   .item-actions .btn { flex: 1 1 auto; }
+}
+
+/* Service photos */
+.service-card { overflow: hidden; }
+.service-photo { width: calc(100% + 2 * var(--s-5)); max-width: none; height: auto; aspect-ratio: 16 / 10; margin: calc(var(--s-5) * -1) calc(var(--s-5) * -1) var(--s-2); object-fit: cover; background: var(--surface-2); }
+.service-card:hover .service-photo { filter: saturate(1.08); }
+.booking-head { justify-content: flex-start; align-items: center; }
+.booking-thumb { width: 5rem; height: 5rem; flex: none; object-fit: cover; border-radius: var(--r-lg); box-shadow: var(--shadow); }
+@media (max-width: 560px) {
+  .service-photo { width: calc(100% + 2 * var(--s-4)); margin: calc(var(--s-4) * -1) calc(var(--s-4) * -1) var(--s-2); }
+  .booking-thumb { width: 4rem; height: 4rem; }
 }
