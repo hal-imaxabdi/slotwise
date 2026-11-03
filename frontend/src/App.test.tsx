@@ -2,7 +2,16 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getSlots, listAdminServices, listBusinessHours, listMyAppointments, listServices, listUnavailablePeriods, logout, me } from './api/endpoints.ts';
+import {
+  getSlots,
+  listAdminServices,
+  listBusinessHours,
+  listMyAppointments,
+  listServices,
+  listUnavailablePeriods,
+  logout,
+  me,
+} from './api/endpoints.ts';
 import { UnauthorizedError } from './api/errors.ts';
 import type { Service } from './api/types.ts';
 import App from './App.tsx';
@@ -10,6 +19,10 @@ import { AuthProvider } from './auth/AuthProvider.tsx';
 import { AUTH } from './test/fixtures.ts';
 
 vi.mock('./api/endpoints.ts');
+vi.mock('./api/health.ts', () => ({
+  waitForServer: () => Promise.resolve(),
+  pingHealth: () => undefined,
+}));
 
 const SERVICES: Service[] = [
   {
@@ -36,20 +49,33 @@ beforeEach(() => {
 });
 
 describe('App routing', () => {
-  it('sends an anonymous visitor to the sign-in page', async () => {
+  it('shows the public landing page to an anonymous visitor at /', async () => {
     vi.mocked(me).mockRejectedValue(new UnauthorizedError('Not authenticated'));
     renderApp('/');
     expect(
-      await screen.findByRole('heading', { name: 'Sign in' }),
+      await screen.findByRole('heading', { level: 1, name: /Never double.booked/ }),
     ).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Sign in' })).not.toBeInTheDocument();
+  });
+
+  it('shows the legal pages without signing in', async () => {
+    vi.mocked(me).mockRejectedValue(new UnauthorizedError('Not authenticated'));
+    renderApp('/privacy');
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Privacy Policy' }),
+    ).toBeInTheDocument();
+  });
+
+  it('shows the account page to a signed-in user', async () => {
+    vi.mocked(me).mockResolvedValue(AUTH);
+    renderApp('/account');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Account' })).toBeInTheDocument();
   });
 
   it('sends an anonymous visitor on a deep link to the sign-in page', async () => {
     vi.mocked(me).mockRejectedValue(new UnauthorizedError('Not authenticated'));
     renderApp('/services');
-    expect(
-      await screen.findByRole('heading', { name: 'Sign in' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
   });
 
   it('shows the services page to a signed-in user at /', async () => {
@@ -72,7 +98,9 @@ describe('App routing', () => {
       slots: [],
     });
     renderApp('/services/s1/book');
-    expect(await screen.findByRole('heading', { name: 'Book Classic Haircut' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Book Classic Haircut' }),
+    ).toBeInTheDocument();
     expect(await screen.findByText('No times are available on this date.')).toBeInTheDocument();
   });
 
@@ -101,9 +129,7 @@ describe('App routing', () => {
     const user = userEvent.setup();
     renderApp('/');
     await user.click(await screen.findByRole('button', { name: 'Sign out' }));
-    expect(
-      await screen.findByRole('heading', { name: 'Sign in' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
   });
 });
 
