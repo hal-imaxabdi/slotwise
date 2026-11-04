@@ -1,11 +1,11 @@
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; scrollbar-color: var(--border-strong) transparent; accent-color: var(--accent); }
+html { -webkit-text-size-adjust: 100%; scrollbar-color: var(--rule-strong) transparent; accent-color: var(--accent); }
 :where(input, textarea) { caret-color: var(--accent); }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--paper);
   color: var(--ink);
   font-family: var(--font);
   font-size: var(--fs-base);
@@ -14,28 +14,32 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3 { margin: 0; color: var(--ink); font-family: var(--font-display); font-weight: 700; line-height: 1.2; letter-spacing: -0.025em; }
-h1 { font-size: var(--fs-2xl); line-height: 1.15; }
+h1, h2, h3 { margin: 0; color: var(--ink); font-family: var(--font-display); font-weight: 700; line-height: 1.15; letter-spacing: -0.025em; text-wrap: balance; }
+h1 { font-size: var(--fs-2xl); font-weight: 800; line-height: 1.05; letter-spacing: -0.035em; }
 h2 { font-size: var(--fs-xl); }
-h3 { font-size: 1.125rem; }
+h3 { font-size: var(--fs-lg); }
 p { margin: 0 0 var(--s-3); }
 ul, ol { margin: 0; padding: 0; }
 strong { font-weight: 600; }
 
-a { color: var(--accent-strong); text-underline-offset: 3px; }
-a:hover { color: var(--accent-ink); }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--accent-ink); text-decoration-thickness: 2px; }
 
-::selection { background: var(--accent-soft-strong); color: var(--ink); }
+::selection { background: var(--accent-tint-strong); color: var(--ink); }
 code, pre { font-family: var(--font-mono); }
 img { max-width: 100%; display: block; }
+time, .num { font-variant-numeric: tabular-nums; }
+.num { font-family: var(--font-mono); letter-spacing: -0.01em; }
 
-:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--r-sm); }
+.eyebrow { margin: 0 0 var(--s-3); color: var(--subtle); font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 main:focus, [tabindex='-1']:focus { outline: none; }
 
 .skip-link {
   position: absolute; left: -9999px; top: 0; z-index: 100;
   padding: var(--s-2) var(--s-4); background: var(--surface); color: var(--ink);
-  font-weight: 600; border: 2px solid var(--ink); border-radius: var(--r-md);
+  font-weight: 600; border: var(--ink-rule);
 }
 .skip-link:focus { left: var(--s-4); top: var(--s-4); }
 

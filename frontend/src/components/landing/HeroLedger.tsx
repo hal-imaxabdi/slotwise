@@ -23,7 +23,7 @@ export function HeroLedger() {
     <div
       className="ledger"
       role="img"
-      aria-label="Today’s appointment book: Andi at 09:00, Siti at 09:30, Rizky at 10:00. A second booking for 10:00 is refused because the slot is taken; 10:30 is still open."
+      aria-label="Today’s appointment book: Andi at 09:00, Siti at 09:30, Rizky at 10:00. A second booking for 10:00 is refused because the slot is taken; 10:30 is still open, and Dimas is at 11:00."
     >
       <div className="ledger__head" aria-hidden="true">
         <span>Today’s book</span>
@@ -95,7 +95,23 @@ export function HeroLedger() {
             Open
           </motion.span>
         </li>
+        <li className="ledger__line">
+          <span className="ledger__time">11:00</span>
+          <motion.span
+            className="ledger__entry"
+            initial={still ? false : { clipPath: 'inset(0 100% 0 0)' }}
+            animate={{ clipPath: 'inset(0 0% 0 0)' }}
+            transition={at(0.2 + ROWS.length * GAP)}
+          >
+            <strong>Dimas Saputra</strong>
+            <span>Hot Towel Shave</span>
+          </motion.span>
+        </li>
       </ol>
+      <p className="ledger__foot" aria-hidden="true">
+        <span>4 booked · 1 open</span>
+        <span>1 clash refused</span>
+      </p>
     </div>
   );
 }

@@ -1,4 +1,5 @@
-/* Self-hosted fonts (SIL OFL, licences in /fonts): no request ever goes to a font CDN. */
+/* Slotwise design tokens. The system behind them is written up in docs/DESIGN.md.
+   Self-hosted fonts (SIL OFL, licences in /fonts): no request ever goes to a font CDN. */
 @font-face {
   font-family: 'Bricolage Grotesque';
   font-style: normal;
@@ -25,78 +26,56 @@
 :root {
   color-scheme: light;
 
-  /* The appointment book: cream ledger paper, maroon bookcloth and ruling, black ink.
-     Every text colour below passes WCAG AA (4.5:1) on --surface, --bg and --cream. */
-  --bg: #faf6f0;
-  --surface: #ffffff;
-  --surface-2: #f3ece1;
-  --surface-hover: #fdfaf5;
-  --border: #e7dccb;
-  --border-strong: #d4c4ad;
+  /* Paper. Every text colour below passes WCAG AA (4.5:1) on --paper and --surface. */
+  --paper: #f5efe4;
+  --surface: #fbf8f2;
+  --surface-2: #ede4d4;
+  --rule: #ddd0bc;
+  --rule-strong: #b6a387;
 
-  --cream: #f5eee3;
-  --cream-2: #ecdfcb;
-  --rule: #e3cdbf;
+  /* Ink */
+  --ink: #1c1512;
+  --muted: #5a4d44;
+  --subtle: #6c5e54;
+  --on-dark: #f5efe4;
+  --on-dark-muted: #c4b8ac;
 
-  --ink: #17120f;
-  --ink-hover: #000000;
-  --muted: #5c4f47;
-  --subtle: #6e6158;
-
+  /* Bookcloth: the one accent */
   --accent: #7a1e2c;
-  --accent-strong: #5b1420;
+  --accent-strong: #5e1621;
   --accent-ink: #4a0f1a;
-  --accent-soft: #f6e7e4;
-  --accent-soft-strong: #ecd1cc;
+  --accent-tint: #f0dfd9;
+  --accent-tint-strong: #e5c8bf;
   --on-accent: #ffffff;
-  --accent-ring: rgb(122 30 44 / 22%);
-  --accent-line: rgb(122 30 44 / 40%);
-  --highlight: #c9a227;
-  --highlight-ink: #6b5310;
-  --highlight-soft: #f7efd6;
-  --dark: #17120f;
-  --on-dark-muted: #c9bdb2;
-  --on-maroon-muted: #e9cfc9;
+  --on-accent-muted: #ebcfc8;
 
-  /* Old names, still used by component rules: they map onto the palette above. */
-  --lavender: var(--subtle);
-  --selected: var(--accent-soft);
-  --selected-strong: var(--accent-soft-strong);
-  --purple: var(--accent);
-  --purple-dark: var(--accent-strong);
-  --purple-ink: var(--accent-ink);
+  /* Status */
+  --success: #2c6a3f;
+  --success-bg: #e3eddd;
+  --warning: #845300;
+  --warning-bg: #f5e8cc;
+  --danger: #b3261e;
+  --danger-strong: #8f1d17;
+  --danger-bg: #f8e0da;
+  --neutral: #5a4d44;
+  --neutral-bg: #e9e1d4;
+  --focus: var(--accent);
 
-  --success: #1f6b3a;
-  --success-bg: #eef6ee;
-  --success-line: #c4dfc8;
-  --warning: #8a5a00;
-  --warning-bg: #fff7e6;
-  --warning-line: #f6d9a0;
-  --danger: #c0262d;
-  --danger-solid: #c0262d;
-  --danger-solid-hover: #a01f25;
-  --danger-bg: #fdf0f0;
-  --danger-line: #f4c5c7;
-  --info: var(--accent-ink);
-  --info-bg: var(--accent-soft);
-  --info-line: var(--accent-soft-strong);
-  --neutral: #5c4f47;
-  --neutral-bg: #f1ebe2;
-  --focus: #7a1e2c;
-
+  /* Type */
   --font: 'Schibsted Grotesk', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial,
     sans-serif;
   --font-display: 'Bricolage Grotesque', var(--font);
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   --fs-xs: 0.8125rem;
-  --fs-sm: 0.9rem;
+  --fs-sm: 0.875rem;
   --fs-base: 1rem;
   --fs-lg: 1.125rem;
-  --fs-xl: 1.25rem;
-  --fs-2xl: clamp(1.6rem, 1.35rem + 0.9vw, 2rem);
-  --fs-hero: clamp(2.4rem, 1.5rem + 3.6vw, 4.25rem);
-  --fs-section: clamp(1.7rem, 1.4rem + 1.3vw, 2.4rem);
+  --fs-xl: 1.375rem;
+  --fs-2xl: clamp(1.75rem, 1.5rem + 1vw, 2.25rem);
+  --fs-section: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
+  --fs-hero: clamp(2.75rem, 1.3rem + 5.6vw, 5.75rem);
 
+  /* Space */
   --s-1: 0.25rem;
   --s-2: 0.5rem;
   --s-3: 0.75rem;
@@ -106,16 +85,16 @@
   --s-7: 3.5rem;
   --s-8: 5.5rem;
 
-  --r-sm: 4px;
-  --r-md: 8px;
-  --r-lg: 12px;
-  --r-xl: 22px;
-  --r-pill: 999px;
-  --shadow: 0 1px 2px rgb(60 30 20 / 6%), 0 3px 8px -2px rgb(60 30 20 / 5%);
-  --shadow-md: 0 2px 4px rgb(60 30 20 / 6%), 0 14px 30px -8px rgb(60 30 20 / 14%);
-  --shadow-lg: 0 4px 10px rgb(60 30 20 / 6%), 0 30px 70px -16px rgb(60 30 20 / 26%);
-  --ease: 160ms ease;
+  /* Shape and motion: square corners, ruled lines, no shadows. */
+  --radius: 2px;
+  --hairline: 1px solid var(--rule);
+  --ink-rule: 2px solid var(--ink);
+  --ease: 150ms ease-out;
 
   --content: 72rem;
-  --header-bg: rgb(250 246 240 / 88%);
+  --gutter: var(--s-5);
+}
+
+@media (max-width: 560px) {
+  :root { --gutter: var(--s-4); }
 }

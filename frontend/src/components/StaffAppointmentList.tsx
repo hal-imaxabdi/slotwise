@@ -109,21 +109,32 @@ function StaffAppointmentItem({
 }: ItemProps) {
   const when = formatAppointmentRange(appointment.starts_at, appointment.ends_at);
   const who = appointment.customer_name;
+  // Same-day ranges show time-first in the day-book ("09:00-10:00" over "Wed, 4 Nov 2026");
+  // the DOM keeps the date first so screen readers hear the usual order.
+  const sameDay = /^(.*), (\d\d:\d\d-\d\d:\d\d)$/.exec(when);
   const isBooked = appointment.status === 'booked';
   const confirmKind: ConfirmKind | null = open !== null && open !== 'reschedule' ? open : null;
   return (
     <li className="staff-appointment">
       <div className="staff-top">
+        <p className="appt-when staff-when">
+          <CalendarIcon className="icon" />
+          {sameDay === null ? (
+            when
+          ) : (
+            <>
+              <span className="staff-when__day">{sameDay[1]}</span>
+              <span className="visually-hidden">, </span>
+              <span className="staff-when__time">{sameDay[2]}</span>
+            </>
+          )}
+        </p>
         <div className="staff-who">
           <h3>{who}</h3>
           <p>{appointment.customer_email}</p>
         </div>
         <div className="staff-what">
           <p>{serviceName}</p>
-          <p className="appt-when">
-            <CalendarIcon className="icon" />
-            {when}
-          </p>
           {appointment.notes !== '' && (
             <p className="appt-notes">{`Notes: ${appointment.notes}`}</p>
           )}
