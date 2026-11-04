@@ -19,7 +19,7 @@ Fully booked. Never double-booked.
 
 <br>
 
-[![Live demo](https://slotwise-mocha.vercel.app)]
+[![Live demo]](https://slotwise-mocha.vercel.app)
 
 <br><br>
 
