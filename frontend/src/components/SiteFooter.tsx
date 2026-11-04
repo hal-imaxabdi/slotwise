@@ -17,11 +17,9 @@ export function SiteFooter() {
           <h2>Product</h2>
           <Link to="/#product">Features</Link>
           <Link to="/#day">How it works</Link>
-          <Link to="/#demo">Live demo</Link>
         </nav>
         <nav aria-label="Company" className="site-footer__col">
           <h2>Company</h2>
-          <Link to="/#faq">FAQ</Link>
           <a href={GITHUB_ISSUES_URL}>Contact</a>
           <a href={GITHUB_URL}>GitHub repository</a>
         </nav>

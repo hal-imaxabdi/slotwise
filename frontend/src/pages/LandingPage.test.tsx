@@ -50,10 +50,18 @@ describe('LandingPage', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: /Never double.booked/ }),
     ).toBeInTheDocument();
-    for (const link of screen.getAllByRole('link', { name: 'Try the live demo' })) {
-      expect(link).toHaveAttribute('href', '#demo');
-    }
+    expect(screen.getAllByRole('button', { name: 'Try the live demo' }).length).toBeGreaterThan(0);
     expect(document.title).toBe(LANDING_TITLE);
+  });
+
+  it('“Try the live demo” signs straight in as the demo client', async () => {
+    vi.mocked(login).mockResolvedValueOnce(AUTH);
+    const user = userEvent.setup();
+    renderLanding();
+    await user.click(screen.getAllByRole('button', { name: 'Try the live demo' })[0]);
+    expect(await screen.findByText('services page')).toBeInTheDocument();
+    expect(waitForServer).toHaveBeenCalled();
+    expect(login).toHaveBeenCalledWith('demo.customer@example.com', 'demo-customer-2026');
   });
 
   it('wakes the API as soon as it loads', () => {

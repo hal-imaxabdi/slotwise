@@ -9,41 +9,40 @@ body {
   color: var(--ink);
   font-family: var(--font);
   font-size: var(--fs-base);
-  line-height: 1.55;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  font-feature-settings: 'ss01' off;
 }
 
 h1, h2, h3 { margin: 0; color: var(--ink); text-wrap: balance; }
-/* Headlines: Instrument Serif comes in one weight; size and italics do the work. */
-h1, h2 { font-family: var(--font-display); font-weight: 400; line-height: 1.05; letter-spacing: -0.01em; }
-h3 { font-family: var(--font); font-weight: 600; line-height: 1.3; letter-spacing: -0.015em; }
+/* Headlines are light and tight; UI headings are semibold. */
+h1, h2 { font-weight: 400; line-height: 1.08; letter-spacing: -0.035em; }
 h1 { font-size: var(--fs-2xl); }
-h1 em, h2 em { font-style: italic; }
-h2 { font-size: var(--fs-2xl); }
-h3 { font-size: var(--fs-lg); }
+h2 { font-size: var(--fs-xl); letter-spacing: -0.025em; }
+h3 { font-size: var(--fs-lg); font-weight: 600; line-height: 1.3; letter-spacing: -0.015em; }
 p { margin: 0 0 var(--s-3); }
 ul, ol { margin: 0; padding: 0; }
 strong { font-weight: 600; }
 
 a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
-a:hover { color: var(--accent-ink); text-decoration-thickness: 2px; }
+a:hover { color: var(--accent-strong); text-decoration-thickness: 2px; }
 
-::selection { background: var(--accent-tint-strong); color: var(--ink); }
+::selection { background: var(--highlight); color: var(--ink); }
 code, pre { font-family: var(--font-mono); }
-img { max-width: 100%; display: block; }
+img { max-width: 100%; height: auto; display: block; }
 time, .num { font-variant-numeric: tabular-nums; }
-.num { font-family: var(--font-mono); letter-spacing: -0.01em; }
 
-.eyebrow { margin: 0 0 var(--s-3); color: var(--subtle); font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+/* Small uppercase label above a heading. */
+.eyebrow { margin: 0 0 var(--s-3); color: var(--subtle); font-size: var(--fs-xs); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
 
-:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-sm); }
 main:focus, [tabindex='-1']:focus { outline: none; }
 
 .skip-link {
   position: absolute; left: -9999px; top: 0; z-index: 100;
   padding: var(--s-2) var(--s-4); background: var(--surface); color: var(--ink);
-  font-weight: 600; border: var(--ink-rule);
+  font-weight: 600; border: 2px solid var(--ink); border-radius: var(--radius-sm);
 }
 .skip-link:focus { left: var(--s-4); top: var(--s-4); }
 

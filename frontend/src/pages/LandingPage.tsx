@@ -1,5 +1,5 @@
-import { MotionConfig, motion, useReducedMotion, type Variants } from 'motion/react';
-import { useEffect } from 'react';
+import { MotionConfig, motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
+import { useEffect, useRef } from 'react';
 import { Navigate, useLocation } from 'react-router';
 import { pingHealth } from '../api/health.ts';
 import type { Role } from '../api/types.ts';
@@ -7,9 +7,8 @@ import { useAuth } from '../auth/useAuth.ts';
 import { ArrowRightIcon } from '../components/icons.tsx';
 import { BookingPreview } from '../components/landing/BookingPreview.tsx';
 import { DayStory } from '../components/landing/DayStory.tsx';
-import { HeroFan } from '../components/landing/HeroFan.tsx';
+import { HeroLedger } from '../components/landing/HeroLedger.tsx';
 import { Reveal } from '../components/landing/Reveal.tsx';
-import { TrustBoard } from '../components/landing/TrustBoard.tsx';
 import { WAKING_MESSAGE } from '../components/LoadingScreen.tsx';
 import { PublicHeader } from '../components/PublicHeader.tsx';
 import { SiteFooter } from '../components/SiteFooter.tsx';
@@ -33,56 +32,6 @@ const ROLES = [
   },
 ];
 
-const PROMISES = [
-  {
-    label: 'No double bookings',
-    text: 'Two clients can never book the same time, even if they tap at the same moment.',
-  },
-  {
-    label: 'Safe changes to hours',
-    text: 'Change your hours without fear: Slotwise won’t strand anyone already booked.',
-  },
-  {
-    label: 'No ads, no tracking',
-    text: 'Clients can delete their account whenever they like.',
-  },
-  {
-    label: 'Open source',
-    text: 'Free, from the booking page to the database.',
-  },
-];
-
-const FAQS = [
-  {
-    q: 'Is Slotwise really free?',
-    a: 'Yes. No subscription, no per-booking fee and no ads. It’s open source, so you can also run your own copy.',
-  },
-  {
-    q: 'How do you stop double bookings on a busy Saturday?',
-    a: 'Every booking is checked the instant it’s made. If two people go for the same time together, the first one gets it and the second is asked to pick another slot.',
-  },
-  {
-    q: 'What if I change my opening hours or prices?',
-    a: 'Change them whenever you like. If a change would clash with someone already booked, Slotwise holds it back until that booking is moved, so nobody turns up to a closed door.',
-  },
-  {
-    q: 'How do clients cancel or move a booking?',
-    a: 'From their own account, online, up to 24 hours before. After that they contact the shop, and your team can still change anything.',
-  },
-  {
-    q: 'Can my team book walk-ins?',
-    a: 'Yes. Staff pick any free time and book it for the client, then mark the visit completed or no-show when it’s over.',
-  },
-  {
-    q: 'Can clients remove their personal data?',
-    a: 'Yes. They delete their account from the account page, and their name, email and booking notes are erased right away.',
-  },
-  {
-    q: 'Is the demo a real shop?',
-    a: 'No. The Jakarta barbershop and its clients are made up, so book, cancel and change whatever you like. The demo resets regularly.',
-  },
-];
-
 const DEMO_LABELS: Record<Role, string> = {
   customer: 'Explore as a client',
   staff: 'Explore as staff',
@@ -91,21 +40,23 @@ const DEMO_LABELS: Record<Role, string> = {
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-// Hero entrance from the 21st.dev template: header, then CTAs, each blurring in and rising.
-const HERO_CONTAINER: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
-};
-const HERO_ITEM: Variants = {
-  hidden: { opacity: 0, y: 12, filter: 'blur(6px)' },
-  visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
-};
+const HEADLINE = ['Fully booked.', 'Never double-booked.'];
 
 export function LandingPage() {
   const auth = useAuth();
   const { hash } = useLocation();
   const demo = useDemoLogin();
   const still = useReducedMotion() ?? false;
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+  const photoY = useTransform(scrollYProgress, [0, 1], still ? [0, 0] : [0, 120]);
+  const cardY = useTransform(scrollYProgress, [0, 1], still ? [0, 0] : [0, -60]);
+  const rolesRef = useRef<HTMLElement>(null);
+  const { scrollYProgress: rolesProgress } = useScroll({
+    target: rolesRef,
+    offset: ['start end', 'end start'],
+  });
+  const rolesY = useTransform(rolesProgress, [0, 1], still ? [0, 0] : [-30, 30]);
 
   useEffect(() => {
     document.title = LANDING_TITLE;
@@ -132,48 +83,86 @@ export function LandingPage() {
       <div className="landing">
         <PublicHeader onLanding />
         <main id="main-content">
-          {/* Layout after 21st.dev "Centered Hero with Image Fan" (hero-10): centred serif
-              headline with a highlighted phrase, two CTAs, a proof line, then the card fan. */}
-          <motion.section
-            className="hero"
-            aria-labelledby="hero-title"
-            variants={HERO_CONTAINER}
-            initial={still ? false : 'hidden'}
-            animate="visible"
-          >
-            <motion.div className="hero__header" variants={HERO_ITEM}>
-              <p className="eyebrow">Open-source appointment booking</p>
-              <h1 id="hero-title">
-                Fully booked.
-                <br />
-                Never <em>double-booked.</em>
-              </h1>
-              <p className="hero__lead">
-                Online booking for barbershops, salons, nail studios, spas and skin clinics.
-                Clients book in a few taps; your team gets one calm, clear day.
-              </p>
-            </motion.div>
-            <motion.div className="hero__cta" variants={HERO_ITEM}>
-              <div className="hero__actions">
-                <a href="#demo" className="btn btn--primary btn--lg">
-                  Try the live demo
-                  <ArrowRightIcon className="icon" />
-                </a>
-                <a href="#day" className="btn btn--ghost btn--lg">
-                  See how it works
-                </a>
+          {/* Velora-inspired (Korsa, Dribbble): a full-bleed photo in a rounded frame, a centred
+              light headline, and the day's book rising out of the bottom edge as a glass card. */}
+          <section ref={heroRef} className="hero" aria-labelledby="hero-title">
+            <div className="hero__frame">
+              <motion.img
+                className="hero__photo"
+                src="/images/hero-interior.webp"
+                alt="A modern salon with styling chairs and wash basins under warm lights"
+                width={2400}
+                height={1602}
+                fetchPriority="high"
+                style={{ y: photoY }}
+                initial={still ? false : { scale: 1.14, opacity: 0.6 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 1.8, ease: EASE }}
+              />
+              <div className="hero__content">
+                <h1 id="hero-title">
+                  <span className="visually-hidden">{HEADLINE.join(' ')}</span>
+                  {HEADLINE.map((line, lineIndex) => (
+                    <span key={line} className="hero__line" aria-hidden="true">
+                      {line.split(' ').map((word, wordIndex) => (
+                        <motion.span
+                          key={word}
+                          className="hero__word"
+                          initial={still ? false : { opacity: 0, y: '0.45em', filter: 'blur(10px)' }}
+                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                          transition={{
+                            duration: 0.8,
+                            delay: 0.25 + (lineIndex * 2 + wordIndex) * 0.12,
+                            ease: EASE,
+                          }}
+                        >
+                          {word}{' '}
+                        </motion.span>
+                      ))}
+                    </span>
+                  ))}
+                </h1>
+                <motion.p
+                  className="hero__lead"
+                  initial={still ? false : { opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.85, ease: EASE }}
+                >
+                  Clients book in a few taps; your team gets one calm, clear day.
+                </motion.p>
               </div>
-              <p className="hero__note">No sign-up. Explore as a client, staff member or owner.</p>
-            </motion.div>
-            <HeroFan />
-          </motion.section>
+              <motion.div className="hero__card" style={{ y: cardY }}>
+                <motion.div
+                  initial={still ? false : { opacity: 0, y: 80 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1.1, delay: 0.9, ease: EASE }}
+                >
+                  <HeroLedger />
+                </motion.div>
+              </motion.div>
+            </div>
+          </section>
 
-          <section className="band" aria-labelledby="band-title">
-            <div className="band__inner">
-              <Reveal className="band__copy">
-                <p className="eyebrow">For clients</p>
+          <section className="about" aria-labelledby="band-title">
+            <div className="about__side">
+              <motion.img
+                className="about__photo"
+                src="/images/client-smiling.webp"
+                alt="A smiling client in the barber’s chair while his barber works"
+                width={1000}
+                height={667}
+                loading="lazy"
+                decoding="async"
+                initial={still ? false : { clipPath: 'inset(18% 18% 18% 18% round 20px)', scale: 1.12 }}
+                whileInView={{ clipPath: 'inset(0% 0% 0% 0% round 20px)', scale: 1 }}
+                viewport={{ once: true, amount: 0.35 }}
+                transition={{ duration: 1.1, ease: EASE }}
+              />
+            </div>
+            <div className="about__main">
+              <Reveal>
                 <h2 id="band-title">Booking that takes a minute, not a phone call.</h2>
-                <p>
+                <p className="about__lead">
                   Clients see every service with its price and length, pick a time that’s
                   actually free, and they’re done. Plans change? They move or cancel online, up to
                   24 hours before.
@@ -202,81 +191,75 @@ export function LandingPage() {
 
           <section id="product" className="section" aria-labelledby="roles-title">
             <div className="section__head">
-              <p className="eyebrow">The product</p>
-              <h2 id="roles-title" className="section__title">
-                One book, read three ways.
-              </h2>
+              <div>
+                <h2 id="roles-title" className="section__title">
+                  One book, read three ways.
+                </h2>
+              </div>
             </div>
-            <ol className="roles">
-              {ROLES.map(({ title, text }, index) => (
-                <motion.li
-                  key={title}
-                  initial={still ? false : { opacity: 0.35, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.4 }}
-                  transition={{ duration: 0.7, delay: index * 0.12, ease: EASE }}
-                >
-                  <span className="roles__num num" aria-hidden="true">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                </motion.li>
-              ))}
-            </ol>
+            <div className="roles-wrap">
+              <figure ref={rolesRef} className="roles__figure">
+                <motion.img
+                  style={{ y: rolesY, scale: 1.08 }}
+                  src="/images/hair-wash.webp"
+                  alt="A stylist washing a client’s hair at the basin"
+                  width={1200}
+                  height={801}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <figcaption className="roles__stat">
+                  <span>Booked online</span>
+                  <strong className="num">24/7</strong>
+                  <span>Moves and cancellations up to a day before</span>
+                </figcaption>
+              </figure>
+              <ol className="roles">
+                {ROLES.map(({ title, text }, index) => (
+                  <motion.li
+                    key={title}
+                    initial={still ? false : { opacity: 0.35, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.5 }}
+                    transition={{ duration: 0.6, delay: index * 0.08, ease: EASE }}
+                  >
+                    <span className="roles__num num" aria-hidden="true">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <h3>{title}</h3>
+                      <p>{text}</p>
+                    </div>
+                  </motion.li>
+                ))}
+              </ol>
+            </div>
           </section>
 
           <section id="day" className="section section--story" aria-labelledby="day-title">
             <div className="section__head">
-              <p className="eyebrow">How it works</p>
-              <h2 id="day-title" className="section__title">
-                A day at the shop, on Slotwise.
-              </h2>
+              <div>
+                <h2 id="day-title" className="section__title">
+                  A day at the shop, on Slotwise.
+                </h2>
+              </div>
             </div>
             <DayStory />
           </section>
 
-          <section className="section trust" aria-labelledby="trust-title">
-            <Reveal className="trust__copy">
-              <p className="eyebrow">Why shops trust it</p>
-              <h2 id="trust-title">Built on trust. Kept simple.</h2>
-              <dl className="promises">
-                {PROMISES.map((promise) => (
-                  <div key={promise.label}>
-                    <dt>{promise.label}</dt>
-                    <dd>{promise.text}</dd>
-                  </div>
-                ))}
-              </dl>
-            </Reveal>
-            <Reveal delay={0.1}>
-              <TrustBoard />
-            </Reveal>
-          </section>
-
           <section id="demo" className="demo" aria-labelledby="demo-title">
-            <div className="demo__inner">
+            <motion.div
+              className="demo__inner"
+              initial={still ? false : { opacity: 0, scale: 0.96, y: 40 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.9, ease: EASE }}
+            >
               <div className="demo__copy">
-                <p className="eyebrow demo__eyebrow">Live demo</p>
-                <h2 id="demo-title">See it in action, right now.</h2>
-                <p>
-                  Walk through a fictional Jakarta barbershop as a client, a member of staff or
-                  the owner. No sign-up, and the data resets regularly, so change whatever you
-                  like.
-                </p>
-                <img
-                  className="demo__photo"
-                  src="/images/team.webp"
-                  alt="A shop team laughing together around a table"
-                  width={1024}
-                  height={559}
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div className="demo__panel">
+                <h2 id="demo-title">See it in action.</h2>
+                <p>A fictional Jakarta barbershop. No sign-up needed.</p>
                 <ul className="demo__actions">
-                  {DEMO_ACCOUNTS.map((account, index) => {
+                  {DEMO_ACCOUNTS.map((account) => {
                     const pending = !fromPreview && pendingRole === account.role;
                     const error =
                       !fromPreview &&
@@ -285,7 +268,17 @@ export function LandingPage() {
                         ? demo.state.message
                         : null;
                     return (
-                      <li key={account.role}>
+                      <motion.li
+                        key={account.role}
+                        initial={still ? false : { opacity: 0, x: -16 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, amount: 0.6 }}
+                        transition={{
+                          duration: 0.6,
+                          delay: 0.25 + DEMO_ACCOUNTS.indexOf(account) * 0.1,
+                          ease: EASE,
+                        }}
+                      >
                         <button
                           type="button"
                           className="demo__btn"
@@ -294,9 +287,6 @@ export function LandingPage() {
                             void demo.start(account);
                           }}
                         >
-                          <span className="demo__btn-num num" aria-hidden="true">
-                            {String(index + 1).padStart(2, '0')}
-                          </span>
                           <span className="demo__btn-label">
                             {pending ? 'Signing in...' : DEMO_LABELS[account.role]}
                           </span>
@@ -312,43 +302,21 @@ export function LandingPage() {
                             {error}
                           </p>
                         )}
-                      </li>
+                      </motion.li>
                     );
                   })}
                 </ul>
-                <details className="demo__creds">
-                  <summary>Prefer to type the logins?</summary>
-                  <dl>
-                    {DEMO_ACCOUNTS.map((account) => (
-                      <div key={account.role}>
-                        <dt>{account.label}</dt>
-                        <dd>
-                          <span>{account.email}</span>
-                          <span>{account.password}</span>
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                </details>
               </div>
-            </div>
-          </section>
-
-          <section id="faq" className="section faq" aria-labelledby="faq-title">
-            <div className="section__head faq__head">
-              <p className="eyebrow">FAQ</p>
-              <h2 id="faq-title" className="section__title">
-                Questions, answered.
-              </h2>
-            </div>
-            <div className="faq__list">
-              {FAQS.map((item) => (
-                <details key={item.q}>
-                  <summary>{item.q}</summary>
-                  <p>{item.a}</p>
-                </details>
-              ))}
-            </div>
+              <img
+                className="demo__photo"
+                src="/images/hero-salon.webp"
+                alt="A stylist laughing with her client in a bright, plant-filled salon"
+                width={2400}
+                height={1600}
+                loading="lazy"
+                decoding="async"
+              />
+            </motion.div>
           </section>
         </main>
         <SiteFooter />

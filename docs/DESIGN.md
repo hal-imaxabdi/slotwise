@@ -1,182 +1,124 @@
 # Slotwise design system
 
-Slotwise is drawn as **the shop's appointment book**: cream ledger paper, maroon bookcloth, black ink, ruled lines. Everything on screen should look like it could be printed in that book. The style is editorial and flat.
+Slotwise is calm, photo-led and premium: real salon photography, light headlines, soft rounded surfaces and one deep forest green. The site is modelled on the **Velora wellness landing page** by Korsa (Dribbble, Popular → Web Design, November 2026). It's used as a design reference, not copied.
 
-The tokens live in [`frontend/src/styles/tokens.css`](../frontend/src/styles/tokens.css). Components use tokens only and never raw hex values. The one exception is the inline SVG data URIs, which can't read CSS variables.
+The tokens live in [`frontend/src/styles/tokens.css`](../frontend/src/styles/tokens.css). Components use tokens only and never raw hex values. The exception is inline SVG data URIs, which can't read CSS variables.
 
 ## Principles
 
-1. **Rules, not shadows.** Use a 1px hairline to separate things and a 2px ink rule to open a section. Nothing floats: no `box-shadow` for elevation, no blur, no gradients.
-2. **Square corners.** Controls get a 2px radius (`--radius`). Containers, photos and panels get none. Nothing is pill-shaped.
-3. **One container deep.** A bordered box never sits inside another bordered box. Inside a panel, divide with rules or a tinted band, not another card.
-4. **Numbers are set like a ledger.** Times, dates, prices and durations use Geist Mono with tabular figures (`.num`, or set the font directly). Readers scan these columns, so they line up.
-5. **Maroon means "this one".** The accent marks the primary action, the selected item and the current page, and nothing decorative. A screen has one filled maroon button at most.
-6. **Real words.** Use specific copy: "Try the live demo", "Book 10:00", "Taken, try 10:30". Never "Revolutionize your workflow", emoji, or icon badges in tinted circles.
+1. **Lead with people.** The landing page opens on a full-bleed photo of a real salon moment. UI floats on the photo as glass cards, never boxed in beside it.
+2. **Light headlines, quiet UI.** Headlines are large and light (300–400). UI text is regular to semibold. Size and weight carry the hierarchy, not colour.
+3. **One accent.** Forest green marks the primary action, the current page and the selected item. Pale lime (`--highlight`) is a small spark for "open" times, the demo banner and hover on light-on-dark buttons. Use it sparingly.
+4. **Soft, not bubbly.** Cards are rounded at 20px, the hero and the bands at 28px, controls at 8–12px, chips at full pill. Separate with hairlines and white-on-off-white contrast. Shadows are only for things that genuinely float, such as the phone mockup.
+5. **Real words.** Specific copy about bookings: "Try the live demo", "Book 10:00", "Taken, try 10:30". No vague marketing lines, no emoji.
 
 ## Colour
 
 | Token | Value | Use |
 | --- | --- | --- |
-| `--paper` | `#f5efe4` | Page background |
-| `--surface` | `#fbf8f2` | Inputs, panels, the one raised sheet on a screen |
-| `--surface-2` | `#ede4d4` | Sunk bands, table heads, selected-but-quiet rows |
-| `--rule` | `#ddd0bc` | Hairlines between rows |
-| `--rule-strong` | `#b6a387` | Input and button borders |
-| `--ink` | `#1c1512` | Text, 2px section rules, the footer |
-| `--muted` | `#5a4d44` | Secondary text (7.2:1 on paper) |
-| `--subtle` | `#6c5e54` | Captions, meta text (5.4:1 on paper) |
-| `--accent` | `#7a1e2c` | Maroon: primary action, selection, current page |
-| `--accent-strong` | `#5e1621` | Hover and press on accent |
-| `--accent-tint` | `#f0dfd9` | Background for selected or hovered rows |
-| `--success` / `--success-bg` | `#2c6a3f` / `#e3eddd` | Completed, active, saved |
-| `--warning` / `--warning-bg` | `#845300` / `#f5e8cc` | No-show, confirm-before-you-act |
-| `--danger` / `--danger-bg` | `#b3261e` / `#f8e0da` | Cancelled, destructive, errors |
-
-The danger red is deliberately orange-red, so it never reads as the brand maroon. Every text pair passes WCAG AA (4.5:1) on `--paper` and `--surface`.
-
-There is no dark mode yet. `color-scheme: light` is declared so form controls don't flip.
+| `--paper` | `#f6f5f0` | Page background, warm off-white |
+| `--surface` | `#ffffff` | Cards, lists, inputs |
+| `--surface-2` | `#eeede6` | Skeletons, quiet fills |
+| `--rule` / `--rule-strong` | `#e3e2da` / `#cbc9bf` | Hairlines / input borders |
+| `--ink` | `#141914` | Text |
+| `--muted` / `--subtle` | `#555b54` / `#697068` | Secondary text / labels (AA on paper and white) |
+| `--accent` | `#24392d` | Forest green: primary buttons, current nav pill, selected day and time, bands |
+| `--accent-strong` | `#182820` | Hover, footer |
+| `--accent-tint` | `#e4ebe2` | Hover on time cells, booked status chip |
+| `--highlight` | `#d4ec9c` | Pale lime spark: open slots, demo banner, arrow tiles on dark |
+| `--glass`, `--glass-line`, `--glass-dark` | white 14% / white 32% / green-black 58% | Glass cards and the floating nav over photos |
+| Status | success `#2d6a43`, warning `#835000`, danger `#b4261e` on matching tints | Completed, no-show, cancelled |
 
 ## Type
 
-| Role | Family | Notes |
+**Plus Jakarta Sans** (variable 200–800, roman and italic, self-hosted WOFF2 under SIL OFL in `frontend/public/fonts`) is the only family. No request goes to a font CDN.
+
+| Role | Weight | Notes |
 | --- | --- | --- |
-| Display (`--font-display`) | **Instrument Serif**, 400 + italic | h1/h2 and landing headlines. It has one weight, so size and italics do the work. The highlighted phrase in a headline is italic maroon ("Never *double-booked.*"). Never bold it: the browser would fake the weight. |
-| Text (`--font`) | **Geist**, 400–700 (variable) | Body, UI, buttons, h3 in app lists, the wordmark. |
-| Figures (`--font-mono`) | **Geist Mono**, 400–600 (variable) | Times, dates, prices, durations, eyebrows, status labels. |
+| Hero headline | 300 | `--fs-hero` clamp(2.5–4.75rem), tracking −0.045em, white on the photo |
+| Section headline (h1/h2) | 400 | `--fs-section` clamp(1.875–3rem), tracking −0.035em |
+| UI heading (h3), names | 500–600 | `--fs-lg`/`--fs-xl` |
+| Body | 400 | 16px, line height 1.6 |
+| Small labels (`.eyebrow`, filter legends, slot groups) | 500 | 12px uppercase, tracking 0.06–0.08em. Used sparingly in the app, not on landing sections |
 
-All three are self-hosted WOFF2 files (Latin subset) under SIL OFL (`frontend/public/fonts`). No request goes to a font CDN. Geist and Instrument Serif are preloaded in `index.html`.
-
-Scale (rem): `xs .8125 · sm .875 · base 1 · lg 1.125 · xl 1.375 · 2xl clamp(1.75–2.25) · section clamp(2–3.25) · hero clamp(3.25–7)`. A serif reads smaller than a heavy grotesk, so headline sizes run large.
-
-- Body line height is 1.55, headings 1.0–1.2.
-- Keep body measure at 60–70 characters (`max-width: 36rem` for leads).
-- **Eyebrow** (`.eyebrow`): mono, `--fs-xs`, uppercase, `0.08em` tracking, `--subtle`. It sits above a headline to name the section ("Legal", "For owners").
+Times, prices and dates use tabular figures (`font-variant-numeric: tabular-nums`, `.num`), so columns line up without a separate mono font.
 
 ## Space and layout
 
-- **Spacing scale:** `--s-1` 4px · `--s-2` 8px · `--s-3` 12px · `--s-4` 16px · `--s-5` 24px · `--s-6` 36px · `--s-7` 56px · `--s-8` 88px.
-- **Content width:** `--content: 72rem`. Side gutters are 24px on desktop and 16px at ≤560px.
-- **Breakpoints:** 1040 (site nav collapses), 900 (two columns become one), 560 (phone).
-- **Touch targets:** at least 44px tall on phones, with at least 8px between neighbouring targets.
+- **Spacing scale:** `--s-1` 4px · `--s-2` 8 · `--s-3` 12 · `--s-4` 16 · `--s-5` 24 · `--s-6` 36 · `--s-7` 56 · `--s-8` 88.
+- **Width:** content max is 76rem. Gutters are 24px, or 16px at ≤560px.
+- **Inset frames:** the hero, the demo band and the footer are inset 12px from the viewport edge (8px on phones) and rounded.
+- **Breakpoints:**
+  - 1040px: the public nav links collapse.
+  - 960px: landing splits stack.
+  - 860px: the app nav wraps to its own row.
+  - 560px: phone layout.
+- **Touch targets:** at least 44px on phones.
 
 ## Components
 
-### Buttons
+- **Floating nav (public).** A fixed dark-glass pill 16px from the top: logo, Product, How it works, "Log in", and a white "Try the live demo" pill that signs straight into the demo and turns lime on hover.
+- **App header.** Off-white bar with a hairline. Nav links sit in a white pill track, and the current page is a filled green pill. The avatar is a green circle.
+- **Buttons.**
+  - `.btn--primary` is green with white text.
+  - An arrow icon inside a `.btn` sits on its own small rounded tile, which nudges right on hover.
+  - Default buttons are white with a `--rule-strong` border, and the border turns ink on hover.
+  - `.btn--quiet` is text only, with a tinted hover.
+  - On photos: a white primary (`.hero__cta`) and a glass ghost (`.hero__ghost`).
+- **Inputs.** White, 8px radius, 44px tall. Focus turns the border green and adds a 3px pale-green ring.
+- **Cards and lists.**
+  - `.card` is white with a hairline and a 20px radius.
+  - Lists (services, appointments, staff day-book, closures, admin services, business hours) are one white rounded panel with hairline rows, never a card per row.
+- **Status chips.** Pill, tinted background, a dot, and the text "Status: X" (kept for screen readers and tests).
+- **Booking.** Steps are numbered pills, and the current one is green. The day strip is seven rounded tiles with the chosen day green. Times are rounded cells grouped as Morning, Afternoon and Evening.
+- **Alerts and confirmations.** Tinted rounded boxes, with no border.
+- **Glass card.** `--glass` fill, `--glass-line` border, a 16–18px backdrop blur and a 20px radius. Used only on photos: Today's book on the hero, and the duration chip on service photos.
+- **Sign in / Create account.** The logo, one white card and one line under it, centred on paper with a faint green glow. No photo, no taglines, no legal links.
+- **Service cards (app).** A three-column grid (two on tablets, one on phones). Each card has a large rounded photo with a glass duration chip, the name and description, then the price and a green Book button with an arrow tile. Cards rise in one after another (CSS) and lift slightly on hover.
+- **Service avatars.** Wherever a service is named in a list (appointments, staff day-book, admin services), a small round photo sits beside it.
 
-| Variant | Look |
-| --- | --- |
-| Default `button` / `.btn` | Surface fill, 1px `--rule-strong` border, ink text. |
-| `.btn--primary` | Maroon fill, white text. One per screen. |
-| `.btn--danger` | Danger fill, for the final confirm of a destructive action only. |
-| `.btn--quiet` | No border. Underlines on hover. |
-| `.btn--ghost` | Transparent with an ink border. Used on the landing page. |
-| Sizes | `.btn--sm` 34px · default 40px · `.btn--lg` 48px · `.btn--block` full width. |
+## Landing page
 
-- Hover darkens the colour: 150ms, no movement, no glow.
-- Focus is a 2px maroon outline, offset 2px. It's always visible.
-- Cancel and remove buttons (`aria-label^="Cancel"` / `"Remove"`) are danger-coloured text on surface.
+Keep it short: every section earns its place.
 
-### Forms
+1. **Hero.** A rounded frame, 36–54rem tall, holding the salon interior photo with a centred dark scrim. On it:
+   - the centred light headline, revealed word by word and sized by window height as well as width;
+   - one line of copy;
+   - the glass "Today's book" card rising out of the bottom edge, with its lower half clipped.
+   - No buttons: "Try the live demo" lives in the nav. The photo settles from a slow zoom and drifts with scroll; the card drifts the other way.
+2. **For clients.** A portrait (revealed with a clip-path wipe) beside the statement, the lead and the working booking preview.
+3. **The product.** "One book, read three ways." A photo with a parallax drift and a frosted stat card sits beside numbered role rows.
+4. **A day at the shop.** Sticky phone on a green photo-tinted stage. All three screens stay mounted and crossfade.
+5. **Live demo.** An inset forest-green band that scales in, with one line of copy and three role buttons (client, staff, owner) that arrive one by one, beside a salon photo.
+6. **Footer.** An inset deep-green rounded block.
 
-- Labels sit above fields, 600 weight.
-- Inputs are 44px tall, `--surface` fill, 1px `--rule-strong` border and 2px radius. Focus turns the border maroon and adds a 2px inner maroon line, with no glow.
-- Hints sit below the field in `--muted`. Errors go in an `.alert--error` near the action.
+Not used, by design: `// LABEL` eyebrows and `[ 02 ]` indexes on landing sections, a trust/feature list, an FAQ, and typed demo credentials. The demo buttons sign in directly.
 
-### Sheets (`.card`)
-
-- One bordered `--surface` sheet with a 1px `--rule` border and no radius or shadow.
-- The title is display type. A lead, if any, sits under it in `--muted`.
-- `.panel` and `.reschedule` inside a sheet or row are a tinted band (`--surface-2`) with a rule on top, not another box.
-
-### Ledger lists
-
-Appointments, the staff day-book, closures and admin services are rows, not cards:
-
-- The list opens with a 2px ink rule, and each row ends with a 1px hairline.
-- Columns: **when** (mono, first and widest-scanned), **who/what**, **status** (right-aligned).
-- Row actions sit in a quiet row under the content. A confirmation opens as a band with a 3px left rule in the warning colour.
-
-### Status marks (`.status-pill`)
-
-Small-caps mono text with a 7px square swatch: Booked (accent), Completed or Active (success), No-show (warning), Cancelled (danger), Inactive (neutral). There is no pill background.
-
-The class keeps its old name so the markup and tests don't change. The visible text stays "Status: X" for screen readers.
-
-### Time grid (SlotPicker)
-
-- Times are a ledger grid: cells share hairline borders, with no gaps and no chips.
-- The group label (Morning, Afternoon, Evening) sits in a mono column on the left on desktop and above the grid on phones.
-- The selected time is filled maroon. Hover tints the cell.
-
-### Day strip (booking)
-
-- Seven days in a single ruled row. The weekday is in mono caps and the date is in display figures.
-- The chosen day is filled maroon.
-
-### Alerts
-
-- Text on a tinted background with a 3px left rule in the alert's colour. No full border, no radius.
-
-### Empty and loading states
-
-- **Empty:** a dashed `--rule-strong` frame, left-aligned title and hint, and an optional icon in `--subtle`. No illustrations or emoji.
-- **Loading:** a 2px maroon line spinner (square caps) beside the text. Skeletons are flat `--surface-2` blocks with a slow opacity pulse, not a shimmer gradient.
-
-### Navigation
-
-- **App header:** cream with a bottom hairline.
-- **Current page:** a 2px maroon underline, not a filled tab.
-- **Account link:** a square monogram stamp.
-- **Public header:** the same rules, plus "Log in" and "Try the live demo".
-
-## Landing hero
-
-The hero is adapted from the 21st.dev template **Centered Hero with Image Fan** (`felipemenezes098/hero-10`). Kept from the template:
-
-- A centred stack: eyebrow, then a serif headline whose second line ends on a highlighted phrase, then the lead, two CTAs and a proof line ("No sign-up…").
-- A fan of three overlapping cards, the outer two tilted ±6° and sliding out from behind the middle one.
-- The blur-in entrance.
-
-Changed for Slotwise (`components/landing/HeroFan.tsx`):
-
-- No Tailwind or `react-wrap-balancer`. `text-wrap: balance` does the balancing.
-- Square cards with a 1px ink outline instead of `rounded-xl shadow-xl`.
-- The middle card is the product: the live "Today's book" ledger. The side cards are a barber photo and a colouring photo.
-- On phones the ledger takes 84% of the width and the photos only peek out from behind it, so the book stays readable.
-
-## Motion
-
-- `motion` runs on the public pages only. App screens use CSS transitions of 150ms or less, on colour only.
-- The hero ledger "writes" its lines once, and the clash slides in and is struck through.
-- Section reveals rise 24px from 35% opacity, once.
-- `prefers-reduced-motion` stops all of it, through `MotionConfig reducedMotion="user"` and the global CSS override.
+The floating nav carries only Product, How it works, Log in and **Try the live demo** (also direct).
 
 ## Imagery
 
-- Photos are real shop scenes, cropped square-cornered, with no shadow.
-- On the landing page a photo can carry a mono caption under a hairline, like a figure in a magazine.
-- Product screenshots appear inside a plain ink device frame.
+- Real salon and barbershop photos from Pexels (free for commercial use, no attribution required), self-hosted as WebP under `frontend/public/images`. The service photos are from Unsplash.
+- Photos are cropped with `object-fit: cover` and rounded to the container radius.
+- Every content photo has descriptive alt text. Decorative copies (service avatars and card photos next to the service name) use `alt=""`.
+- The phone screenshots in `public/images/product` are generated from the app, so regenerate them after UI changes.
 
-## Things we don't do
+## Motion
 
-- Purple or blue gradients, glassmorphism, `backdrop-filter`, glow.
-- Pill buttons, pill badges, rounded "card grids" with drop shadows.
-- Icon-in-a-tinted-circle feature tiles.
-- Centred heroes with stock gradients.
-- Inter, or system fonts as a design choice. Never fake-bold the serif.
-- Vague copy: if a sentence would fit any SaaS product, rewrite it to be about bookings.
+- `motion` runs on the public pages only. The hero copy rises and un-blurs in sequence, the glass card follows, and sections reveal once on scroll.
+- App screens use CSS transitions of 180ms on colour only.
+- `prefers-reduced-motion` turns all of it off, through `MotionConfig reducedMotion="user"` and a global CSS override.
+
+## Don'ts
+
+- No purple or blue gradients, no neon, no glassmorphism on plain backgrounds (glass only over photos).
+- No Inter, and no second display font.
+- No card-per-row lists, no drop shadows on cards.
+- No fabricated proof such as review counts or "trusted by" numbers. Use real facts only.
+- No filler: no section labels like "// HOW IT WORKS", no repeated CTAs in the same bar.
 
 ## How this system was chosen
 
-The **ui-ux-pro-max** design-system search for "appointment booking barbershop salon scheduling editorial" returned the **Flat Design** style:
-
-- No gradients or shadows, clean lines, typography-focused, 150–200ms colour transitions.
-- Its UX rules on contrast, 44px targets, tabular data and reduced motion are adopted above.
-- Its editorial serif suggestion was adopted (Instrument Serif in place of its Playfair Display). Its suggested palette (blue `#2563EB` and green) was rejected. The blue is the generic SaaS look this redesign set out to avoid, and the existing maroon and cream identity is already distinctive and already in the logo, favicon and social image.
-
-Pattern research on SavvyCal and Cal.com shaped three choices:
-- The product itself as the hero visual (the ledger in the middle of the fan).
-- Features as rows rather than a 3-up card grid.
-- FAQ as plain question and answer.
-
-The hero layout itself came from the 21st.dev catalogue (see **Landing hero**).
+- The direction was picked by the owner from today's Dribbble Popular web-design shots, shortlisted for appointment-based service businesses: Velora, BOOP, Court Crew and ARVÉN.
+- The **ui-ux-pro-max** guidance still applies: AA contrast, 44px targets, tabular data, reduced motion and a single accent.
+- Earlier passes (maroon editorial; Instrument Serif with Geist; a 21st.dev image-fan hero) were replaced at the owner's request.

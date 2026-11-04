@@ -5,6 +5,7 @@ import { ApiError } from '../api/errors.ts';
 import type { AdminService } from '../api/types.ts';
 import { useAdminServices, type AdminServiceFilter } from '../hooks/useAdminServices.ts';
 import AdminServiceForm from './AdminServiceForm.tsx';
+import { serviceImage } from '../lib/serviceImages.ts';
 
 const HEADING_ID = 'admin-services-heading';
 
@@ -75,7 +76,10 @@ function AdminServiceItem({
   return (
     <li className={service.is_active ? 'admin-service' : 'admin-service is-inactive'}>
       <div className="admin-service-main">
-        <h3>{service.name}</h3>
+        <div className="svc-title">
+          <img className="svc-avatar" src={serviceImage(service.name)} alt="" width={44} height={44} loading="lazy" decoding="async" />
+          <h3>{service.name}</h3>
+        </div>
         <p className={`status-pill status-pill--${service.is_active ? 'active' : 'inactive'}`}>
           {`Status: ${service.is_active ? 'Active' : 'Inactive'}`}
         </p>

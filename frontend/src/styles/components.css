@@ -1,19 +1,22 @@
-/* Buttons: plain <button> is the outlined style. Square, flat, colour-only hover. */
+/* Buttons: plain <button> is the outlined style. Rounded, calm, colour-only hover. */
 :where(button, .btn) {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
   min-height: 2.5rem; padding: 0.5rem 1rem;
   font: inherit; font-size: var(--fs-sm); font-weight: 600; line-height: 1.2; text-decoration: none;
   color: var(--ink); background: var(--surface);
-  border: 1px solid var(--rule-strong); border-radius: var(--radius);
+  border: 1px solid var(--rule-strong); border-radius: var(--radius-sm);
   cursor: pointer; transition: background var(--ease), border-color var(--ease), color var(--ease);
 }
 :where(button, .btn):hover:not(:disabled):not([aria-disabled='true']) { color: var(--ink); background: var(--paper); border-color: var(--ink); }
 :where(button, .btn):active:not(:disabled) { background: var(--surface-2); }
 
-/* Primary: the one maroon-filled action on a screen. */
+/* Primary: forest green. An arrow icon inside sits on its own small tile, as in the Velora reference. */
 .btn--primary { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
 .btn--primary:hover:not(:disabled):not([aria-disabled='true']) { color: var(--on-accent); background: var(--accent-strong); border-color: var(--accent-strong); }
 .btn--primary:active:not(:disabled) { background: var(--accent-ink); }
+.btn > .icon { box-sizing: content-box; padding: 0.3rem; margin-right: -0.45rem; border-radius: 6px; background: rgb(255 255 255 / 14%); transition: transform var(--ease); }
+.btn:not(.btn--primary) > .icon { background: var(--accent); color: var(--on-accent); }
+.btn:hover > .icon { transform: translateX(2px); }
 
 .btn--danger { color: var(--on-accent); background: var(--danger); border-color: var(--danger); }
 .btn--danger:hover:not(:disabled):not([aria-disabled='true']) { color: var(--on-accent); background: var(--danger-strong); border-color: var(--danger-strong); }
@@ -23,9 +26,9 @@ button[aria-label^='Cancel'], button[aria-label^='Remove'] { color: var(--danger
 button[aria-label^='Cancel']:hover:not(:disabled), button[aria-label^='Remove']:hover:not(:disabled) { color: var(--danger-strong); background: var(--danger-bg); border-color: var(--danger); }
 
 .btn--quiet { border-color: transparent; background: transparent; color: var(--ink); }
-.btn--quiet:hover:not(:disabled):not([aria-disabled='true']) { background: transparent; border-color: transparent; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
-.btn--ghost { color: var(--ink); background: transparent; border-color: var(--ink); }
-.btn--lg { min-height: 3rem; padding: 0.7rem 1.4rem; font-size: var(--fs-base); }
+.btn--quiet:hover:not(:disabled):not([aria-disabled='true']) { background: var(--surface-2); border-color: transparent; color: var(--ink); }
+.btn--ghost { color: var(--ink); background: transparent; border-color: var(--rule-strong); }
+.btn--lg { min-height: 3rem; padding: 0.7rem 1.25rem; font-size: var(--fs-base); border-radius: var(--radius); }
 .btn--sm { min-height: 2.125rem; padding: 0.25rem 0.75rem; font-size: var(--fs-xs); }
 .btn--block { width: 100%; }
 
@@ -33,20 +36,20 @@ button:disabled, [aria-disabled='true'] { cursor: not-allowed; opacity: 0.5; }
 .btn-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
 
 /* Forms */
-label { display: block; margin-bottom: var(--s-2); font-size: var(--fs-sm); font-weight: 600; color: var(--ink); }
+label { display: block; margin-bottom: var(--s-2); font-size: var(--fs-sm); font-weight: 500; color: var(--ink); }
 :where(input, select, textarea) {
-  width: 100%; min-height: 2.75rem; padding: 0.55rem 0.75rem;
+  width: 100%; min-height: 2.75rem; padding: 0.55rem 0.85rem;
   font: inherit; color: var(--ink); background: var(--surface);
-  border: 1px solid var(--rule-strong); border-radius: var(--radius);
+  border: 1px solid var(--rule-strong); border-radius: var(--radius-sm);
   transition: border-color var(--ease), box-shadow var(--ease);
 }
 :where(input, select, textarea)::placeholder { color: var(--subtle); }
-:where(input[type='date'], input[type='time'], input[type='number']) { font-family: var(--font-mono); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+:where(input[type='date'], input[type='time'], input[type='number']) { font-variant-numeric: tabular-nums; }
 :where(textarea) { min-height: 5.5rem; resize: vertical; line-height: 1.5; }
 :where(select) { padding-right: 2.25rem; appearance: none; cursor: pointer;
-  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%231c1512' stroke-width='1.6' stroke-linecap='square'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 0.8rem center; }
-:where(input, select, textarea):hover:not(:disabled) { border-color: var(--ink); }
-:where(input, select, textarea):focus-visible { outline: none; border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23141914' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 0.85rem center; }
+:where(input, select, textarea):hover:not(:disabled) { border-color: var(--subtle); }
+:where(input, select, textarea):focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint-strong); }
 :where(input, select, textarea):disabled { background: var(--surface-2); cursor: not-allowed; opacity: 0.7; }
 :where(input[type='checkbox'], input[type='radio']) { width: 1.1rem; height: 1.1rem; min-height: 0; accent-color: var(--accent); }
 
@@ -55,21 +58,21 @@ label { display: block; margin-bottom: var(--s-2); font-size: var(--fs-sm); font
 .form-grid { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); align-items: start; }
 .form-stack { display: grid; gap: var(--s-4); }
 .form-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
-.char-count { margin: var(--s-1) 0 0; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.char-count { margin: var(--s-1) 0 0; font-size: var(--fs-xs); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
 fieldset { min-width: 0; margin: 0; border: 0; padding: 0; }
 legend { padding: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--ink); }
 
-/* Sheets: one bordered surface, never nested. */
-.card { padding: var(--s-5); background: var(--surface); border: var(--hairline); }
+/* Cards: white, rounded, a hairline. Inside a card, divide with rules or a tinted band. */
+.card { padding: var(--s-5); background: var(--surface); border: var(--hairline); border-radius: var(--radius-lg); }
 .card > :last-child, .panel > :last-child { margin-bottom: 0; }
-.card-title { margin-bottom: var(--s-1); font-size: 1.75rem; }
+.card-title { margin-bottom: var(--s-1); font-size: var(--fs-xl); }
 .card-lead { margin: 0 0 var(--s-4); color: var(--muted); font-size: var(--fs-sm); }
-.panel { margin-top: var(--s-3); padding: var(--s-4); background: var(--surface-2); border-top: var(--hairline); }
+.panel { margin-top: var(--s-3); padding: var(--s-4); background: var(--paper); border-radius: var(--radius); }
 .hint { color: var(--muted); font-size: var(--fs-sm); }
 
-/* Alerts: tinted band with a left rule. */
+/* Alerts: soft tinted pill-rounded boxes. */
 .alert { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); margin: 0 0 var(--s-4);
-  padding: var(--s-3) var(--s-4); border-left: 3px solid; font-size: var(--fs-sm); font-weight: 500; }
+  padding: var(--s-3) var(--s-4); border-radius: var(--radius); font-size: var(--fs-sm); font-weight: 500; }
 .alert p { margin: 0; }
 .alert > p { flex: 1 1 14rem; }
 .alert--error { color: var(--danger); background: var(--danger-bg); }
@@ -85,35 +88,33 @@ legend { padding: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--ink
 .loading--page { justify-content: center; min-height: 40vh; margin: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.skeleton { display: block; background: var(--surface-2); animation: pulse 1.6s ease-in-out infinite; }
+.skeleton { display: block; background: var(--surface-2); border-radius: var(--radius); animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: 0.55; } }
 
-/* Empty states: a dashed frame, left aligned, no illustration. */
-.empty-state { display: grid; justify-items: start; gap: var(--s-1); padding: var(--s-5); color: var(--muted);
-  border: 1px dashed var(--rule-strong); }
+/* Empty states */
+.empty-state { display: grid; justify-items: center; gap: var(--s-1); padding: var(--s-6) var(--s-5); text-align: center; color: var(--muted);
+  background: var(--surface); border: 1px dashed var(--rule-strong); border-radius: var(--radius-lg); }
 .empty-state p { margin: 0; }
-.empty-state .empty-title { color: var(--ink); font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 400; }
+.empty-state .empty-title { color: var(--ink); font-size: var(--fs-lg); font-weight: 600; letter-spacing: -0.015em; }
 .empty-state .btn { margin-top: var(--s-3); }
 .empty-icon { width: 1.75rem; height: 1.75rem; margin-bottom: var(--s-2); color: var(--subtle); }
 
-/* Status marks: mono caps with a square swatch. Text stays "Status: X" for screen readers and tests. */
-.status-pill { display: inline-flex; align-items: center; gap: 0.45rem; width: fit-content; margin: 0; white-space: nowrap;
-  color: var(--neutral); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-.status-pill::before { content: ''; flex: none; width: 0.45rem; height: 0.45rem; background: currentColor; }
-.status-pill--booked { color: var(--accent); }
-.status-pill--completed, .status-pill--active { color: var(--success); }
-.status-pill--cancelled { color: var(--danger); }
-.status-pill--cancelled::before { background: transparent; border: 1.5px solid currentColor; }
-.status-pill--inactive { color: var(--subtle); }
-.status-pill--inactive::before { background: transparent; border: 1.5px solid currentColor; }
-.status-pill--no_show { color: var(--warning); }
+/* Status chips: pill, tinted. Text stays "Status: X" for screen readers and tests. */
+.status-pill { display: inline-flex; align-items: center; gap: 0.4rem; width: fit-content; margin: 0; padding: 0.2rem 0.65rem; white-space: nowrap;
+  color: var(--neutral); background: var(--neutral-bg); border-radius: var(--radius-pill); font-size: var(--fs-xs); font-weight: 600; }
+.status-pill::before { content: ''; flex: none; width: 0.4rem; height: 0.4rem; border-radius: 50%; background: currentColor; }
+.status-pill--booked { color: var(--accent-ink); background: var(--accent-tint); }
+.status-pill--completed, .status-pill--active { color: var(--success); background: var(--success-bg); }
+.status-pill--cancelled { color: var(--danger); background: var(--danger-bg); }
+.status-pill--inactive { color: var(--neutral); background: var(--neutral-bg); }
+.status-pill--no_show { color: var(--warning); background: var(--warning-bg); }
 
-/* Inline confirmation: a warning band with a left rule. */
-.confirm-panel { margin-top: var(--s-3); padding: var(--s-3) var(--s-4); background: var(--warning-bg); border-left: 3px solid var(--warning); color: var(--ink); }
+/* Inline confirmation */
+.confirm-panel { margin-top: var(--s-3); padding: var(--s-3) var(--s-4); background: var(--warning-bg); border-radius: var(--radius); color: var(--ink); }
 .confirm-panel:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .confirm-panel > p { margin: 0 0 var(--s-3); font-weight: 600; color: var(--warning); }
 .confirm-panel .btn-row { margin: 0; }
 
 .back-link { display: inline-flex; align-items: center; gap: var(--s-1); margin-bottom: var(--s-4); font-size: var(--fs-sm); font-weight: 500; color: var(--muted); text-decoration: none; }
-.back-link:hover { color: var(--ink); text-decoration: underline; }
+.back-link:hover { color: var(--ink); }
 .icon { width: 1.1em; height: 1.1em; flex: none; vertical-align: -0.15em; }

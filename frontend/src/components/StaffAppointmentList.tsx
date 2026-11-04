@@ -7,6 +7,7 @@ import { useStaffAppointments, type StaffFilters } from '../hooks/useStaffAppoin
 import { formatAppointmentRange } from '../lib/dates.ts';
 import { CalendarIcon } from './icons.tsx';
 import { RescheduleForm } from './RescheduleForm.tsx';
+import { serviceImage } from '../lib/serviceImages.ts';
 
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
   booked: 'Booked',
@@ -134,7 +135,10 @@ function StaffAppointmentItem({
           <p>{appointment.customer_email}</p>
         </div>
         <div className="staff-what">
-          <p>{serviceName}</p>
+          <p className="svc-title">
+            <img className="svc-avatar" src={serviceImage(serviceName)} alt="" width={44} height={44} loading="lazy" decoding="async" />
+            {serviceName}
+          </p>
           {appointment.notes !== '' && (
             <p className="appt-notes">{`Notes: ${appointment.notes}`}</p>
           )}

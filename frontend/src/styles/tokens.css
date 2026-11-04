@@ -1,84 +1,78 @@
 /* Slotwise design tokens. The system behind them is written up in docs/DESIGN.md.
-   Self-hosted fonts (SIL OFL, licences in /fonts): no request ever goes to a font CDN. */
+   Self-hosted font (SIL OFL, licence in /fonts): no request ever goes to a font CDN. */
 @font-face {
-  font-family: 'Instrument Serif';
+  font-family: 'Plus Jakarta Sans';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 200 800;
   font-display: swap;
-  src: url('/fonts/instrument-serif-latin.woff2') format('woff2');
+  src: url('/fonts/plus-jakarta-sans-latin.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Instrument Serif';
+  font-family: 'Plus Jakarta Sans';
   font-style: italic;
-  font-weight: 400;
+  font-weight: 200 800;
   font-display: swap;
-  src: url('/fonts/instrument-serif-italic-latin.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Geist';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url('/fonts/geist-latin.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Geist Mono';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url('/fonts/geist-mono-latin.woff2') format('woff2');
+  src: url('/fonts/plus-jakarta-sans-italic-latin.woff2') format('woff2');
 }
 
 :root {
   color-scheme: light;
 
-  /* Paper. Every text colour below passes WCAG AA (4.5:1) on --paper and --surface. */
-  --paper: #f5efe4;
-  --surface: #fbf8f2;
-  --surface-2: #ede4d4;
-  --rule: #ddd0bc;
-  --rule-strong: #b6a387;
+  /* Surfaces: warm off-white page, white cards. Every text colour passes WCAG AA on both. */
+  --paper: #f6f5f0;
+  --surface: #ffffff;
+  --surface-2: #eeede6;
+  --rule: #e3e2da;
+  --rule-strong: #cbc9bf;
 
   /* Ink */
-  --ink: #1c1512;
-  --muted: #5a4d44;
-  --subtle: #6c5e54;
-  --on-dark: #f5efe4;
-  --on-dark-muted: #c4b8ac;
+  --ink: #141914;
+  --muted: #555b54;
+  --subtle: #697068;
+  --on-dark: #ffffff;
+  --on-dark-muted: #c9d1c8;
 
-  /* Bookcloth: the one accent */
-  --accent: #7a1e2c;
-  --accent-strong: #5e1621;
-  --accent-ink: #4a0f1a;
-  --accent-tint: #f0dfd9;
-  --accent-tint-strong: #e5c8bf;
+  /* Forest green: the one accent */
+  --accent: #24392d;
+  --accent-strong: #182820;
+  --accent-ink: #1b2d22;
+  --accent-tint: #e4ebe2;
+  --accent-tint-strong: #cfdccb;
   --on-accent: #ffffff;
-  --on-accent-muted: #ebcfc8;
+  --on-accent-muted: #c3cfc2;
+  --highlight: #d4ec9c;
+  --highlight-ink: #2e4417;
+
+  /* Glass over photos */
+  --glass: rgb(255 255 255 / 14%);
+  --glass-strong: rgb(255 255 255 / 22%);
+  --glass-line: rgb(255 255 255 / 32%);
+  --glass-dark: rgb(16 22 17 / 58%);
 
   /* Status */
-  --success: #2c6a3f;
-  --success-bg: #e3eddd;
-  --warning: #845300;
-  --warning-bg: #f5e8cc;
-  --danger: #b3261e;
+  --success: #2d6a43;
+  --success-bg: #e2efe3;
+  --warning: #835000;
+  --warning-bg: #f7ecd2;
+  --danger: #b4261e;
   --danger-strong: #8f1d17;
-  --danger-bg: #f8e0da;
-  --neutral: #5a4d44;
-  --neutral-bg: #e9e1d4;
-  --focus: var(--accent);
+  --danger-bg: #f9e3de;
+  --neutral: #555b54;
+  --neutral-bg: #eceae3;
+  --focus: #24392d;
 
-  /* Type */
-  --font: 'Geist', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-display: 'Instrument Serif', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
-  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
-  --fs-xs: 0.8125rem;
+  /* Type: one family, light for headlines, regular to semibold for UI. */
+  --font: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: var(--font);
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
   --fs-base: 1rem;
   --fs-lg: 1.125rem;
   --fs-xl: 1.375rem;
-  --fs-2xl: clamp(1.75rem, 1.5rem + 1vw, 2.25rem);
-  --fs-section: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
-  --fs-hero: clamp(3.25rem, 1.6rem + 6.4vw, 7rem);
+  --fs-2xl: clamp(1.625rem, 1.4rem + 0.9vw, 2.125rem);
+  --fs-section: clamp(1.875rem, 1.4rem + 1.9vw, 3rem);
+  --fs-hero: clamp(2.5rem, 1.5rem + 3.6vw, 4.75rem);
 
   /* Space */
   --s-1: 0.25rem;
@@ -90,13 +84,17 @@
   --s-7: 3.5rem;
   --s-8: 5.5rem;
 
-  /* Shape and motion: square corners, ruled lines, no shadows. */
-  --radius: 2px;
+  /* Shape: soft rounded cards, pill chips, hairlines; shadows only for floating glass. */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
   --hairline: 1px solid var(--rule);
-  --ink-rule: 2px solid var(--ink);
-  --ease: 150ms ease-out;
+  --shadow-float: 0 18px 40px -18px rgb(10 20 12 / 35%);
+  --ease: 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
 
-  --content: 72rem;
+  --content: 76rem;
   --gutter: var(--s-5);
 }
 

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useInView, useReducedMotion } from 'motion/react';
+import { motion, useInView, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 
 const MOMENTS = [
@@ -66,7 +66,6 @@ function Moment({
 export function DayStory() {
   const [active, setActive] = useState(0);
   const still = useReducedMotion() ?? false;
-  const current = MOMENTS[active];
 
   return (
     <div className="day">
@@ -77,19 +76,20 @@ export function DayStory() {
       </ol>
       <div className="day__stage" aria-hidden="true">
         <div className="day__phone">
-          <AnimatePresence mode="popLayout" initial={false}>
+          {/* All three screens stay mounted and crossfade, so the phone is never empty
+              mid-swap (fast scrolling used to leave it black). */}
+          {MOMENTS.map((moment, index) => (
             <motion.img
-              key={current.screen}
-              src={current.screen}
+              key={moment.screen}
+              src={moment.screen}
               alt=""
               width={780}
               height={1688}
-              initial={still ? false : { opacity: 0, y: 24, filter: 'blur(6px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              exit={still ? undefined : { opacity: 0, y: -24, filter: 'blur(6px)' }}
-              transition={{ duration: still ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
+              initial={false}
+              animate={{ opacity: index === active ? 1 : 0, y: still || index === active ? 0 : 12 }}
+              transition={{ duration: still ? 0 : 0.45, ease: [0.16, 1, 0.3, 1] }}
             />
-          </AnimatePresence>
+          ))}
         </div>
       </div>
     </div>

@@ -9,6 +9,7 @@ import { RescheduleForm } from '../components/RescheduleForm.tsx';
 import { useMyAppointments } from '../hooks/useMyAppointments.ts';
 import { useServices } from '../hooks/useServices.ts';
 import { canChangeAppointment, formatAppointmentRange } from '../lib/dates.ts';
+import { serviceImage } from '../lib/serviceImages.ts';
 
 const BUSINESS_TIMEZONE = 'Asia/Jakarta';
 const CHANGE_HINT =
@@ -73,7 +74,10 @@ function AppointmentItem({
   return (
     <li className={`appointment appointment--${appointment.status}`}>
       <div className="appointment-head">
-        <h3>{serviceName}</h3>
+        <div className="svc-title">
+          <img className="svc-avatar" src={serviceImage(serviceName)} alt="" width={44} height={44} loading="lazy" decoding="async" />
+          <h3>{serviceName}</h3>
+        </div>
         <p className={`status-pill status-pill--${appointment.status}`}>
           {`Status: ${STATUS_LABELS[appointment.status]}`}
         </p>
