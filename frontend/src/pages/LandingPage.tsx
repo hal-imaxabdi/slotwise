@@ -1,5 +1,5 @@
-import { MotionConfig, motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
-import { useEffect, useRef } from 'react';
+import { MotionConfig, motion, useReducedMotion, type Variants } from 'motion/react';
+import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router';
 import { pingHealth } from '../api/health.ts';
 import type { Role } from '../api/types.ts';
@@ -7,7 +7,7 @@ import { useAuth } from '../auth/useAuth.ts';
 import { ArrowRightIcon } from '../components/icons.tsx';
 import { BookingPreview } from '../components/landing/BookingPreview.tsx';
 import { DayStory } from '../components/landing/DayStory.tsx';
-import { HeroLedger } from '../components/landing/HeroLedger.tsx';
+import { HeroFan } from '../components/landing/HeroFan.tsx';
 import { Reveal } from '../components/landing/Reveal.tsx';
 import { TrustBoard } from '../components/landing/TrustBoard.tsx';
 import { WAKING_MESSAGE } from '../components/LoadingScreen.tsx';
@@ -91,14 +91,21 @@ const DEMO_LABELS: Record<Role, string> = {
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+// Hero entrance from the 21st.dev template: header, then CTAs, each blurring in and rising.
+const HERO_CONTAINER: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
+};
+const HERO_ITEM: Variants = {
+  hidden: { opacity: 0, y: 12, filter: 'blur(6px)' },
+  visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+};
+
 export function LandingPage() {
   const auth = useAuth();
   const { hash } = useLocation();
   const demo = useDemoLogin();
   const still = useReducedMotion() ?? false;
-  const heroRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start end', 'end start'] });
-  const photoY = useTransform(scrollYProgress, [0, 1], still ? [0, 0] : [-48, 48]);
 
   useEffect(() => {
     document.title = LANDING_TITLE;
@@ -125,76 +132,41 @@ export function LandingPage() {
       <div className="landing">
         <PublicHeader onLanding />
         <main id="main-content">
-          <section className="hero" aria-labelledby="hero-title">
-            <div className="hero__copy">
-              <motion.p
-                className="eyebrow hero__eyebrow"
-                initial={still ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, ease: EASE }}
-              >
-                Open-source appointment booking
-              </motion.p>
-              <motion.h1
-                id="hero-title"
-                initial={still ? false : { opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, ease: EASE }}
-              >
+          {/* Layout after 21st.dev "Centered Hero with Image Fan" (hero-10): centred serif
+              headline with a highlighted phrase, two CTAs, a proof line, then the card fan. */}
+          <motion.section
+            className="hero"
+            aria-labelledby="hero-title"
+            variants={HERO_CONTAINER}
+            initial={still ? false : 'hidden'}
+            animate="visible"
+          >
+            <motion.div className="hero__header" variants={HERO_ITEM}>
+              <p className="eyebrow">Open-source appointment booking</p>
+              <h1 id="hero-title">
                 Fully booked.
                 <br />
-                <em>Never</em> double‑booked.
-              </motion.h1>
-              <motion.div
-                className="hero__body"
-                initial={still ? false : { opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.12, ease: EASE }}
-              >
-                <p className="hero__lead">
-                  Online booking for barbershops, salons, nail studios, spas and skin clinics.
-                  Clients book in a few taps; your team gets one calm, clear day.
-                </p>
-                <div className="hero__actions">
-                  <a href="#demo" className="btn btn--primary btn--lg">
-                    Try the live demo
-                    <ArrowRightIcon className="icon" />
-                  </a>
-                  <a href="#day" className="btn btn--ghost btn--lg">
-                    See how it works
-                  </a>
-                </div>
-                <p className="hero__note">
-                  No sign-up. Explore as a client, staff member or owner.
-                </p>
-              </motion.div>
-            </div>
-            <div className="hero__visual">
-              <HeroLedger />
-            </div>
-          </section>
-
-          <figure ref={heroRef} className="hero-figure">
-            <div className="hero-figure__frame">
-              <motion.img
-                className="hero-figure__photo"
-                src="/images/hero-barber.webp"
-                alt="A smiling barber at his shop counter while a client pays by phone"
-                width={1400}
-                height={1050}
-                fetchPriority="high"
-                style={{ y: photoY }}
-                initial={still ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.1, ease: EASE }}
-              />
-            </div>
-            <figcaption>
-              <span className="num">Fig. 1</span>
-              The client booked from their phone last night. At the counter, the book already
-              knows.
-            </figcaption>
-          </figure>
+                Never <em>double-booked.</em>
+              </h1>
+              <p className="hero__lead">
+                Online booking for barbershops, salons, nail studios, spas and skin clinics.
+                Clients book in a few taps; your team gets one calm, clear day.
+              </p>
+            </motion.div>
+            <motion.div className="hero__cta" variants={HERO_ITEM}>
+              <div className="hero__actions">
+                <a href="#demo" className="btn btn--primary btn--lg">
+                  Try the live demo
+                  <ArrowRightIcon className="icon" />
+                </a>
+                <a href="#day" className="btn btn--ghost btn--lg">
+                  See how it works
+                </a>
+              </div>
+              <p className="hero__note">No sign-up. Explore as a client, staff member or owner.</p>
+            </motion.div>
+            <HeroFan />
+          </motion.section>
 
           <section className="band" aria-labelledby="band-title">
             <div className="band__inner">

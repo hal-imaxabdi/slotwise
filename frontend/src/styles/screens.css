@@ -44,7 +44,7 @@
 .booking-main > .alert { margin: 0; }
 /* The main column is open paper: sections are ruled, not boxed. The aside is the one sheet. */
 .booking-main > .card { padding: 0; background: transparent; border: 0; }
-.booking-main .card-title { font-size: var(--fs-xl); }
+.booking-main .card-title { font-size: 1.75rem; }
 .booking-aside { position: sticky; top: 5.5rem; }
 .summary-card { border-top: 3px solid var(--accent); }
 .summary-card .card-title { margin-bottom: var(--s-3); }
@@ -64,7 +64,7 @@
 .day-strip button { display: grid; justify-items: center; gap: 0.15rem; width: 100%; min-height: 4.25rem; padding: var(--s-2) var(--s-1); background: var(--surface); border: 0; border-right: 1px solid var(--rule-strong); border-bottom: 1px solid var(--rule-strong); border-radius: 0; }
 .day-strip button:hover:not(:disabled) { background: var(--accent-tint); border-color: var(--rule-strong); }
 .day-strip__wd { color: var(--subtle); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
-.day-strip__dm { font-family: var(--font-display); font-size: var(--fs-base); font-weight: 700; font-variant-numeric: tabular-nums; }
+.day-strip__dm { font-size: var(--fs-base); font-weight: 600; font-variant-numeric: tabular-nums; }
 .day-strip button[aria-pressed='true'], .day-strip button[aria-pressed='true']:hover:not(:disabled) { color: var(--on-accent); background: var(--accent); }
 .day-strip button[aria-pressed='true'] .day-strip__wd { color: var(--on-accent-muted); }
 .date-field { max-width: 16rem; }
@@ -100,7 +100,7 @@
 .booking-details dt, .booking-details dd { padding: var(--s-2) 0; border-bottom: var(--hairline); }
 .booking-details dt { color: var(--muted); }
 .booking-details dd { margin: 0; color: var(--ink); font-weight: 600; text-align: right; }
-.booking-form > [role='status'] { margin: 0; font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+.booking-form > [role='status'] { margin: 0; font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 400; color: var(--ink); line-height: 1.1; }
 .booking-count { margin: 0; }
 
 .confirmed { max-width: 38rem; margin: var(--s-6) auto; padding: var(--s-6) var(--s-5); border-top: 4px solid var(--success); }

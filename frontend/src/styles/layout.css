@@ -2,7 +2,7 @@
 .app-header { position: sticky; top: 0; z-index: 50; background: var(--paper); border-bottom: var(--hairline); }
 .app-header__inner { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 0 var(--s-5); max-width: var(--content); margin: 0 auto; padding: 0 var(--gutter); }
 
-.brand { justify-self: start; align-self: center; display: inline-flex; align-items: center; gap: 0.55rem; color: var(--ink); font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.04em; text-transform: lowercase; line-height: 1; text-decoration: none; }
+.brand { justify-self: start; align-self: center; display: inline-flex; align-items: center; gap: 0.55rem; color: var(--ink); font-family: var(--font); font-size: 1.25rem; font-weight: 700; letter-spacing: -0.04em; text-transform: lowercase; line-height: 1; text-decoration: none; }
 .brand:hover { color: var(--ink); text-decoration: none; }
 .brand-mark { width: 1.5rem; height: 1.5rem; flex: none; color: var(--accent); }
 
@@ -35,7 +35,7 @@
 
 @media (max-width: 760px) {
   .app-header__inner { display: flex; flex-wrap: wrap; align-items: center; padding: var(--s-3) var(--gutter) 0; gap: var(--s-2); }
-  .app-header nav { order: 3; flex-basis: 100%; justify-content: flex-start; gap: var(--s-4); margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter); overflow-x: auto; scrollbar-width: none; border-top: var(--hairline); }
+  .app-header nav { order: 3; flex-basis: 100%; justify-content: flex-start; gap: var(--s-4); margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter); overflow-x: auto; scrollbar-width: none; }
   .app-header nav a { white-space: nowrap; min-height: 2.75rem; }
   .app-main { padding-top: var(--s-5); }
 }

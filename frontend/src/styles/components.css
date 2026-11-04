@@ -62,7 +62,7 @@ legend { padding: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--ink
 /* Sheets: one bordered surface, never nested. */
 .card { padding: var(--s-5); background: var(--surface); border: var(--hairline); }
 .card > :last-child, .panel > :last-child { margin-bottom: 0; }
-.card-title { margin-bottom: var(--s-1); font-size: var(--fs-xl); }
+.card-title { margin-bottom: var(--s-1); font-size: 1.75rem; }
 .card-lead { margin: 0 0 var(--s-4); color: var(--muted); font-size: var(--fs-sm); }
 .panel { margin-top: var(--s-3); padding: var(--s-4); background: var(--surface-2); border-top: var(--hairline); }
 .hint { color: var(--muted); font-size: var(--fs-sm); }
@@ -92,7 +92,7 @@ legend { padding: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--ink
 .empty-state { display: grid; justify-items: start; gap: var(--s-1); padding: var(--s-5); color: var(--muted);
   border: 1px dashed var(--rule-strong); }
 .empty-state p { margin: 0; }
-.empty-state .empty-title { color: var(--ink); font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 700; letter-spacing: -0.015em; }
+.empty-state .empty-title { color: var(--ink); font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 400; }
 .empty-state .btn { margin-top: var(--s-3); }
 .empty-icon { width: 1.75rem; height: 1.75rem; margin-bottom: var(--s-2); color: var(--subtle); }
 

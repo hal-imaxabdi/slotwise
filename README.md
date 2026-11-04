@@ -139,6 +139,6 @@ cd frontend && npm run typecheck && npm run lint && npm test
 ## Credits
 
 Photos from [Unsplash](https://unsplash.com/license), used under the Unsplash License.
-Fonts: Bricolage Grotesque, Schibsted Grotesk and JetBrains Mono, under the SIL Open Font
+Fonts: Instrument Serif, Geist and Geist Mono, under the SIL Open Font
 License (licence files in `frontend/public/fonts`). The barbershop and everyone in the demo
 are fictional.

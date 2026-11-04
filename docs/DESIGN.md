@@ -9,7 +9,7 @@ The tokens live in [`frontend/src/styles/tokens.css`](../frontend/src/styles/tok
 1. **Rules, not shadows.** Use a 1px hairline to separate things and a 2px ink rule to open a section. Nothing floats: no `box-shadow` for elevation, no blur, no gradients.
 2. **Square corners.** Controls get a 2px radius (`--radius`). Containers, photos and panels get none. Nothing is pill-shaped.
 3. **One container deep.** A bordered box never sits inside another bordered box. Inside a panel, divide with rules or a tinted band, not another card.
-4. **Numbers are set like a ledger.** Times, dates, prices and durations use JetBrains Mono with tabular figures (`.num`, or set the font directly). Readers scan these columns, so they line up.
+4. **Numbers are set like a ledger.** Times, dates, prices and durations use Geist Mono with tabular figures (`.num`, or set the font directly). Readers scan these columns, so they line up.
 5. **Maroon means "this one".** The accent marks the primary action, the selected item and the current page, and nothing decorative. A screen has one filled maroon button at most.
 6. **Real words.** Use specific copy: "Try the live demo", "Book 10:00", "Taken, try 10:30". Never "Revolutionize your workflow", emoji, or icon badges in tinted circles.
 
@@ -40,13 +40,13 @@ There is no dark mode yet. `color-scheme: light` is declared so form controls do
 
 | Role | Family | Notes |
 | --- | --- | --- |
-| Display (`--font-display`) | **Bricolage Grotesque**, 700–800 | Headlines only. At hero sizes it's set narrow (`font-stretch: 85%`) and tight (`-0.04em`). |
-| Text (`--font`) | **Schibsted Grotesk**, 400–600 | Body, UI, buttons. A newspaper grotesk, so it has more character than Inter. |
-| Figures (`--font-mono`) | **JetBrains Mono**, 400–600 | Times, dates, prices, durations, eyebrows, status labels. |
+| Display (`--font-display`) | **Instrument Serif**, 400 + italic | h1/h2 and landing headlines. It has one weight, so size and italics do the work. The highlighted phrase in a headline is italic maroon ("Never *double-booked.*"). Never bold it: the browser would fake the weight. |
+| Text (`--font`) | **Geist**, 400–700 (variable) | Body, UI, buttons, h3 in app lists, the wordmark. |
+| Figures (`--font-mono`) | **Geist Mono**, 400–600 (variable) | Times, dates, prices, durations, eyebrows, status labels. |
 
-All three are self-hosted WOFF2 files under SIL OFL (`frontend/public/fonts`). No request goes to a font CDN.
+All three are self-hosted WOFF2 files (Latin subset) under SIL OFL (`frontend/public/fonts`). No request goes to a font CDN. Geist and Instrument Serif are preloaded in `index.html`.
 
-Scale (rem): `xs .8125 · sm .875 · base 1 · lg 1.125 · xl 1.375 · 2xl clamp(1.75–2.25) · section clamp(2–3.25) · hero clamp(2.75–5.75)`.
+Scale (rem): `xs .8125 · sm .875 · base 1 · lg 1.125 · xl 1.375 · 2xl clamp(1.75–2.25) · section clamp(2–3.25) · hero clamp(3.25–7)`. A serif reads smaller than a heavy grotesk, so headline sizes run large.
 
 - Body line height is 1.55, headings 1.0–1.2.
 - Keep body measure at 60–70 characters (`max-width: 36rem` for leads).
@@ -129,9 +129,24 @@ The class keeps its old name so the markup and tests don't change. The visible t
 - **Account link:** a square monogram stamp.
 - **Public header:** the same rules, plus "Log in" and "Try the live demo".
 
+## Landing hero
+
+The hero is adapted from the 21st.dev template **Centered Hero with Image Fan** (`felipemenezes098/hero-10`). Kept from the template:
+
+- A centred stack: eyebrow, then a serif headline whose second line ends on a highlighted phrase, then the lead, two CTAs and a proof line ("No sign-up…").
+- A fan of three overlapping cards, the outer two tilted ±6° and sliding out from behind the middle one.
+- The blur-in entrance.
+
+Changed for Slotwise (`components/landing/HeroFan.tsx`):
+
+- No Tailwind or `react-wrap-balancer`. `text-wrap: balance` does the balancing.
+- Square cards with a 1px ink outline instead of `rounded-xl shadow-xl`.
+- The middle card is the product: the live "Today's book" ledger. The side cards are a barber photo and a colouring photo.
+- On phones the ledger takes 84% of the width and the photos only peek out from behind it, so the book stays readable.
+
 ## Motion
 
-- Only `motion` on the public pages. App screens use CSS transitions of 150ms or less, on colour only.
+- `motion` runs on the public pages only. App screens use CSS transitions of 150ms or less, on colour only.
 - The hero ledger "writes" its lines once, and the clash slides in and is struck through.
 - Section reveals rise 24px from 35% opacity, once.
 - `prefers-reduced-motion` stops all of it, through `MotionConfig reducedMotion="user"` and the global CSS override.
@@ -148,7 +163,7 @@ The class keeps its old name so the markup and tests don't change. The visible t
 - Pill buttons, pill badges, rounded "card grids" with drop shadows.
 - Icon-in-a-tinted-circle feature tiles.
 - Centred heroes with stock gradients.
-- Inter, or system fonts as a design choice.
+- Inter, or system fonts as a design choice. Never fake-bold the serif.
 - Vague copy: if a sentence would fit any SaaS product, rewrite it to be about bookings.
 
 ## How this system was chosen
@@ -157,9 +172,11 @@ The **ui-ux-pro-max** design-system search for "appointment booking barbershop s
 
 - No gradients or shadows, clean lines, typography-focused, 150–200ms colour transitions.
 - Its UX rules on contrast, 44px targets, tabular data and reduced motion are adopted above.
-- Its suggested palette (blue `#2563EB` and green) and its serif pairing were rejected. The blue is the generic SaaS look this redesign set out to avoid, and the existing maroon, cream and grotesk identity is already distinctive and already in the logo, favicon and social image.
+- Its editorial serif suggestion was adopted (Instrument Serif in place of its Playfair Display). Its suggested palette (blue `#2563EB` and green) was rejected. The blue is the generic SaaS look this redesign set out to avoid, and the existing maroon and cream identity is already distinctive and already in the logo, favicon and social image.
 
 Pattern research on SavvyCal and Cal.com shaped three choices:
-- A left-aligned hero with the product itself as the visual.
+- The product itself as the hero visual (the ledger in the middle of the fan).
 - Features as rows rather than a 3-up card grid.
 - FAQ as plain question and answer.
+
+The hero layout itself came from the 21st.dev catalogue (see **Landing hero**).
