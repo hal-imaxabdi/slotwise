@@ -19,7 +19,7 @@ Fully booked. Never double-booked.
 
 <br>
 
-[![Live demo](https://img.shields.io/badge/Live_demo-Try_it_now_→-24392D?style=for-the-badge)](https://slotwise-mocha.vercel.app)
+[![Live demo](https://img.shields.io/badge/Live_demo-24392D?style=for-the-badge)](https://slotwise-mocha.vercel.app)
 
 <br><br>
 
