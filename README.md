@@ -1,47 +1,75 @@
 <div align="center">
 
-<img src="docs/logo.svg" width="64" height="64" alt="Slotwise logo">
+<img src="docs/logo.svg" width="72" height="72" alt="Slotwise logo">
 
 # Slotwise
 
-Online booking for barbershops, salons and studios.
+**Appointment booking for barbershops, salons and studios.**<br>
+Fully booked. Never double-booked.
 
-**[Live demo](https://slotwise-mocha.vercel.app)**
+<br>
+
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+
+<br>
+
+[![Live demo](https://img.shields.io/badge/Live_demo-Try_it_now_→-24392D?style=for-the-badge)](https://slotwise-mocha.vercel.app)
+
+<br><br>
+
+<img src="docs/images/landing.jpg" alt="Slotwise landing page" width="900">
 
 </div>
 
-## About
+<br>
 
-Slotwise gives small appointment-based businesses a booking page clients can use from their phone,
-and one shared calendar for the team. Two clients can't book the same time slot.
+## Overview
 
-## Demo
+Slotwise is a full-stack booking platform for small appointment-based businesses. Clients book
+from their phone in under a minute, and the whole team works from one shared calendar. Every
+booking is checked by the database itself, so two clients can never be given the same time slot.
 
-Click **Try the live demo** on the site to sign in as a client. You can also sign in as staff or as
-the owner from the demo section.
+## Live demo
 
-- **Client:** book a service, then reschedule or cancel it.
-- **Staff:** view the day's appointments, book walk-ins, mark visits as completed or no-show.
-- **Owner:** manage services, prices, opening hours and closures.
+The [live demo](https://slotwise-mocha.vercel.app) runs a fictional Jakarta barbershop. Select
+**Try the live demo** to sign in instantly; no account is needed.
 
-The demo data is fictional and resets regularly. The server sleeps when idle, so the first load can
-take up to a minute.
+| Role | What you can do |
+|---|---|
+| **Client** | Browse services, book a time, then reschedule or cancel |
+| **Staff** | Manage the day's appointments, book walk-ins, record completed visits and no-shows |
+| **Owner** | Manage services, prices, opening hours and closures |
 
-## Features
+<table>
+  <tr>
+    <td width="33%"><img src="docs/images/services.jpg" alt="Services"><br><sub><b>Services</b></sub></td>
+    <td width="33%"><img src="docs/images/booking.jpg" alt="Booking a time"><br><sub><b>Booking</b></sub></td>
+    <td width="33%"><img src="docs/images/staff.jpg" alt="Staff appointments"><br><sub><b>Staff view</b></sub></td>
+  </tr>
+</table>
 
-- Only free time slots are shown, based on opening hours, closures and existing bookings
-- Clients can reschedule or cancel up to 24 hours before
-- Changes to hours can't affect bookings that already exist
-- Clients can delete their account at any time
-- Works on mobile and desktop
+> [!NOTE]
+> Demo data resets regularly. The server sleeps when idle, so the first request may take up to a minute.
 
-## Tech stack
+## Key features
 
-React, TypeScript, FastAPI, PostgreSQL. Tested with Vitest and Pytest. Deployed on Vercel and Render.
+- **Conflict-free scheduling.** Overlapping bookings are rejected at the database level, even under simultaneous requests.
+- **Live availability.** Only genuinely free slots are offered, based on opening hours, closures and existing bookings.
+- **Self-service for clients.** Bookings can be rescheduled or cancelled online up to 24 hours in advance.
+- **Tools for the team.** Staff handle walk-ins and visit outcomes; owners manage services, pricing and hours without disrupting existing bookings.
+- **Secure by default.** Server-side sessions, hashed passwords, CSRF protection and login throttling. Clients can delete their account at any time.
+- **Responsive and accessible.** Built mobile-first, with keyboard support and reduced-motion handling.
 
-## Running locally
+## Getting started
 
-Requires Python 3.12, Node.js 20.19+ and Docker. Copy `.env.example` to `.env` and fill it in, then:
+**Prerequisites:** Python 3.12, Node.js 20.19+ and Docker. Copy `.env.example` to `.env` and set the
+database credentials.
 
 ```bash
 docker compose up -d db
@@ -57,6 +85,17 @@ npm install
 npm run dev
 ```
 
-## Credits
+The web app runs at `http://localhost:5173` and expects the API on port 8000.
 
-Photos from Pexels and Unsplash. The demo barbershop is fictional.
+## Project structure
+
+```
+backend/    FastAPI application, database migrations and tests
+frontend/   React web application and tests
+docs/       Design system, data model and operations notes
+```
+
+## Acknowledgements
+
+Photography from [Pexels](https://www.pexels.com/license/) and [Unsplash](https://unsplash.com/license).
+The demo business and all people in it are fictional.
