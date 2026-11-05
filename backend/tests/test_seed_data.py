@@ -138,3 +138,18 @@ def test_same_now_gives_the_same_data(db):
     db.commit()
     run_seed(db)
     assert [(a.starts_at, a.status) for a in appointments(db)] == first
+
+
+# Weekends, Jakarta midnight, end of a month, Sunday close: the seed must satisfy every
+# CHECK and EXCLUDE constraint whatever "now" is (a cold start can happen at any time).
+@pytest.mark.parametrize("now", [
+    datetime(2026, 11, 7, 3, 0, tzinfo=UTC),     # Saturday 10:00 Jakarta, shop open
+    datetime(2026, 11, 8, 16, 59, tzinfo=UTC),   # Sunday 23:59 Jakarta, shop closed
+    datetime(2026, 11, 8, 17, 0, tzinfo=UTC),    # Monday 00:00 Jakarta
+    datetime(2026, 12, 31, 16, 45, tzinfo=UTC),  # New Year's Eve 23:45 Jakarta
+    datetime(2027, 2, 28, 10, 7, 33, tzinfo=UTC),  # off-grid seconds, month end
+])
+def test_seed_is_constraint_safe_at_any_time(db, now):
+    run_seed(db, now)
+    assert count(db, Appointment) > 50
+    assert count(db, User, User.email == DEMO) == 1

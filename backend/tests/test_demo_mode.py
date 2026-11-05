@@ -265,3 +265,65 @@ def test_real_account_can_change_password_in_demo_mode(api, db, demo_mode):
     r = api.post("/auth/password", headers=headers,
                  json={"current_password": REAL_PW, "new_password": "a-brand-new-password"})
     assert r.status_code == 200
+
+
+# --- demo mode turned off after a demo deployment -----------------------------------
+
+
+def test_public_demo_passwords_are_refused_once_demo_mode_is_off(api, db, monkeypatch):
+    seed_demo(db)  # hashes still hold the public passwords: nobody re-ran the seed
+    monkeypatch.setattr(settings, "demo_mode", False)
+    assert login(api, STAFF, STAFF_PW).status_code == 401
+    assert login(api, ADMIN, ADMIN_PW).status_code == 401
+    assert login(api, CUSTOMER, "demo-customer-2026").status_code == 200
+
+
+def test_refused_public_password_counts_as_a_failed_login(api, db, monkeypatch):
+    seed_demo(db)
+    monkeypatch.setattr(settings, "demo_mode", False)
+    for _ in range(5):
+        login(api, ADMIN, ADMIN_PW)
+    assert login(api, ADMIN, ADMIN_PW).status_code == 429
+
+
+def test_seed_without_demo_mode_ends_sessions_opened_with_public_passwords(api, db):
+    seed_demo(db)
+    staff_id = db.scalar(select(User.id).where(User.email == STAFF))
+    create_session(db, staff_id, now=NOW)
+    db.commit()
+
+    seed(db, passwords={}, now=NOW, demo_mode=False)
+    db.commit()
+    db.expire_all()
+    sessions = db.scalars(select(UserSession).where(UserSession.user_id == staff_id)).all()
+    assert sessions and all(s.revoked_at is not None for s in sessions)
+
+
+# --- the deployment's start command -------------------------------------------------
+
+
+def test_reset_leaves_all_three_demo_accounts_able_to_log_in(api, db, demo_mode):
+    reset_demo(db, now=NOW)  # empty database, as on a first deploy
+    db.commit()
+    for email, password in ((CUSTOMER, "demo-customer-2026"), (STAFF, STAFF_PW), (ADMIN, ADMIN_PW)):
+        assert login(api, email, password).status_code == 200, email
+
+
+def test_reset_cli_if_demo_mode_says_staff_logins_are_off(capsys):
+    assert reset_script.main(["--if-demo-mode"]) == 0
+    assert "DEMO_MODE=true" in capsys.readouterr().out
+
+
+# --- frontend buttons and backend accounts must agree -------------------------------
+
+
+def test_frontend_demo_buttons_use_the_seeded_credentials():
+    from pathlib import Path
+
+    from app.demo import DEMO_ACCOUNTS
+
+    source = (Path(__file__).resolve().parents[2]
+              / "frontend" / "src" / "lib" / "demoAccounts.ts").read_text()
+    for account in DEMO_ACCOUNTS:
+        assert f"email: '{account.email}'" in source, account.email
+        assert f"password: '{account.password}'" in source, account.email
