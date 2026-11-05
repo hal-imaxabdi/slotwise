@@ -21,6 +21,7 @@ from app.database import SessionLocal
 from app.demo import DEMO_ACCOUNTS, DEMO_ADMIN, DEMO_CUSTOMER, DEMO_STAFF
 from app.models import Appointment, AppointmentStatus, BusinessHour, Service, UnavailablePeriod, User
 from app.security.passwords import hash_password, verify_password
+from app.sessions import revoke_all_for_user
 from app.slots import local_minute_to_utc
 
 JAKARTA = ZoneInfo("Asia/Jakarta")
@@ -61,12 +62,14 @@ def ensure_password(user: User, password: str | None) -> None:
         print(f"password: set for {user.email}")
 
 
-def revoke_public_password(user: User) -> None:
-    """Outside DEMO_MODE, staff/admin must not keep a published demo password."""
+def revoke_public_password(db: Session, user: User, now: datetime) -> None:
+    """Outside DEMO_MODE, staff/admin must not keep a published demo password, nor the
+    sessions that visitors opened with it."""
     public = PUBLIC_PRIVILEGED_PASSWORDS.get(user.role)
     if public is not None and verify_password(public, user.password_hash):
         user.password_hash = UNUSABLE_PASSWORD
-        print(f"password: public demo password revoked for {user.email}")
+        revoked = revoke_all_for_user(db, user.id, now=now)
+        print(f"password: public demo password revoked for {user.email} ({revoked} sessions ended)")
 
 
 # name, description, minutes, price (IDR), active
@@ -314,7 +317,7 @@ def seed(
         password = passwords.get(role)
         ensure_password(user, password)
         if password is None and not demo_mode:
-            revoke_public_password(user)
+            revoke_public_password(db, user, now)
     customers = [get_or_create_user(db, e, n, "customer") for e, n in CUSTOMERS]
     services = {s[0]: get_or_create_service(db, *s) for s in SERVICES}
 
