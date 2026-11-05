@@ -1,78 +1,67 @@
-/* Slotwise design tokens. The system behind them is written up in docs/DESIGN.md.
-   Self-hosted font (SIL OFL, licence in /fonts): no request ever goes to a font CDN. */
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('/fonts/plus-jakarta-sans-latin.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: italic;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('/fonts/plus-jakarta-sans-italic-latin.woff2') format('woff2');
-}
+/* Slotwise design tokens: the "fade-night flyer" system, written up in docs/DESIGN.md.
+   Three inks only (scarlet, black, newsprint) plus one grey. Self-hosted fonts (SIL OFL,
+   licence in /fonts): no request ever goes to a font CDN. */
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/barlow-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: italic; font-weight: 400; font-display: swap; src: url('/fonts/barlow-latin-400-italic.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/barlow-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/barlow-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/barlow-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/barlow-condensed-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 800; font-display: swap; src: url('/fonts/barlow-condensed-latin-800-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: italic; font-weight: 700; font-display: swap; src: url('/fonts/barlow-condensed-latin-700-italic.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: italic; font-weight: 800; font-display: swap; src: url('/fonts/barlow-condensed-latin-800-italic.woff2') format('woff2'); }
 
 :root {
   color-scheme: light;
 
-  /* Surfaces: warm off-white page, white cards. Every text colour passes WCAG AA on both. */
-  --paper: #f6f5f0;
-  --surface: #ffffff;
-  --surface-2: #eeede6;
-  --rule: #e3e2da;
-  --rule-strong: #cbc9bf;
+  /* Inks. Scarlet means "look here": the one action, the current place, a problem.
+     Black carries what is committed (booked, primary chrome). Newsprint is the ground. */
+  --scarlet: #e3140f;
+  --scarlet-deep: #b80d09;
+  --scarlet-tint: #fbe4e1;
+  --black: #0b0b0b;
+  --newsprint: #f4f1ea;
+  --newsprint-2: #e8e3d7;
+  --white: #ffffff;
 
-  /* Ink */
-  --ink: #141914;
-  --muted: #555b54;
-  --subtle: #697068;
-  --on-dark: #ffffff;
-  --on-dark-muted: #c9d1c8;
+  /* Semantic */
+  --paper: var(--newsprint);
+  --surface: var(--white);
+  --surface-2: var(--newsprint-2);
+  --rule: #d6d0c2;
+  --rule-strong: var(--black);
+  --ink: var(--black);
+  --muted: #55524b;
+  --subtle: #66625a;
+  --on-dark: var(--white);
+  --on-dark-muted: #cfcac0;
+  --accent: var(--black);
+  --accent-strong: var(--scarlet);
+  --on-accent: var(--white);
+  --focus: var(--black);
 
-  /* Forest green: the one accent */
-  --accent: #24392d;
-  --accent-strong: #182820;
-  --accent-ink: #1b2d22;
-  --accent-tint: #e4ebe2;
-  --accent-tint-strong: #cfdccb;
-  --on-accent: #ffffff;
-  --on-accent-muted: #c3cfc2;
-  --highlight: #d4ec9c;
-  --highlight-ink: #2e4417;
+  /* State law: every state keeps one look everywhere and always says its name. */
+  --state-booked-bg: var(--black);
+  --state-booked-ink: var(--white);
+  --state-done-ink: var(--black);
+  --state-cancelled-ink: var(--subtle);
+  --state-noshow-ink: var(--scarlet-deep);
+  --danger: var(--scarlet-deep);
+  --danger-bg: var(--scarlet-tint);
 
-  /* Glass over photos */
-  --glass: rgb(255 255 255 / 14%);
-  --glass-strong: rgb(255 255 255 / 22%);
-  --glass-line: rgb(255 255 255 / 32%);
-  --glass-dark: rgb(16 22 17 / 58%);
-
-  /* Status */
-  --success: #2d6a43;
-  --success-bg: #e2efe3;
-  --warning: #835000;
-  --warning-bg: #f7ecd2;
-  --danger: #b4261e;
-  --danger-strong: #8f1d17;
-  --danger-bg: #f9e3de;
-  --neutral: #555b54;
-  --neutral-bg: #eceae3;
-  --focus: #24392d;
-
-  /* Type: one family, light for headlines, regular to semibold for UI. */
-  --font: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-display: var(--font);
+  /* Type: Barlow Condensed (italic caps) speaks; Barlow works. */
+  --font: 'Barlow', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', var(--font);
   --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
-  --fs-xs: 0.75rem;
-  --fs-sm: 0.875rem;
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.9375rem;
   --fs-base: 1rem;
   --fs-lg: 1.125rem;
-  --fs-xl: 1.375rem;
-  --fs-2xl: clamp(1.625rem, 1.4rem + 0.9vw, 2.125rem);
-  --fs-section: clamp(1.875rem, 1.4rem + 1.9vw, 3rem);
-  --fs-hero: clamp(2.5rem, 1.5rem + 3.6vw, 4.75rem);
+  --fs-xl: 1.5rem;
+  --fs-2xl: clamp(2rem, 1.6rem + 1.6vw, 2.75rem);
+  --fs-section: clamp(2.5rem, 1.6rem + 3.6vw, 4.75rem);
+  --fs-hero: clamp(3.5rem, 1.4rem + 8.4vw, 9rem);
+  --shear: -9deg;
 
   /* Space */
   --s-1: 0.25rem;
@@ -84,15 +73,17 @@
   --s-7: 3.5rem;
   --s-8: 5.5rem;
 
-  /* Shape: soft rounded cards, pill chips, hairlines; shadows only for floating glass. */
-  --radius-sm: 8px;
-  --radius: 12px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-  --radius-pill: 999px;
+  /* Shape: cut paper. Square corners, black rules, no soft shadows. */
+  --radius-sm: 0;
+  --radius: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-pill: 0;
   --hairline: 1px solid var(--rule);
-  --shadow-float: 0 18px 40px -18px rgb(10 20 12 / 35%);
-  --ease: 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  --line: 2px solid var(--black);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease: 160ms var(--ease-out);
+  --halftone: radial-gradient(circle at center, rgb(11 11 11 / 22%) 0.9px, transparent 1.3px) 0 0 / 7px 7px;
 
   --content: 76rem;
   --gutter: var(--s-5);

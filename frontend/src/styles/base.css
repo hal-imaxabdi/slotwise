@@ -1,7 +1,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; scrollbar-color: var(--rule-strong) transparent; accent-color: var(--accent); }
-:where(input, textarea) { caret-color: var(--accent); }
+html { -webkit-text-size-adjust: 100%; scrollbar-color: var(--black) var(--newsprint-2); accent-color: var(--scarlet); background: var(--paper); }
+:where(input, textarea) { caret-color: var(--scarlet); }
 
 body {
   margin: 0;
@@ -9,40 +9,43 @@ body {
   color: var(--ink);
   font-family: var(--font);
   font-size: var(--fs-base);
-  line-height: 1.6;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  font-feature-settings: 'ss01' off;
 }
 
+/* Headlines are cut from the flyer: condensed italic caps. UI headings stay upright Barlow. */
 h1, h2, h3 { margin: 0; color: var(--ink); text-wrap: balance; }
-/* Headlines are light and tight; UI headings are semibold. */
-h1, h2 { font-weight: 400; line-height: 1.08; letter-spacing: -0.035em; }
+h1, h2 { font-family: var(--font-display); font-style: italic; font-weight: 800; line-height: 0.95; letter-spacing: -0.005em; text-transform: uppercase; }
 h1 { font-size: var(--fs-2xl); }
-h2 { font-size: var(--fs-xl); letter-spacing: -0.025em; }
-h3 { font-size: var(--fs-lg); font-weight: 600; line-height: 1.3; letter-spacing: -0.015em; }
+h2 { font-size: var(--fs-xl); font-weight: 700; line-height: 1; }
+h3 { font-size: var(--fs-lg); font-weight: 600; line-height: 1.3; letter-spacing: -0.005em; }
 p { margin: 0 0 var(--s-3); }
 ul, ol { margin: 0; padding: 0; }
 strong { font-weight: 600; }
 
-a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
-a:hover { color: var(--accent-strong); text-decoration-thickness: 2px; }
+a { color: var(--ink); text-decoration-color: var(--scarlet); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+a:hover { color: var(--scarlet-deep); }
 
-::selection { background: var(--highlight); color: var(--ink); }
+::selection { background: var(--scarlet); color: var(--white); }
 code, pre { font-family: var(--font-mono); }
 img { max-width: 100%; height: auto; display: block; }
 time, .num { font-variant-numeric: tabular-nums; }
 
-/* Small uppercase label above a heading. */
-.eyebrow { margin: 0 0 var(--s-3); color: var(--subtle); font-size: var(--fs-xs); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+/* Times, prices and dates in lists: the flyer's numerals. */
+.flyer-num { font-family: var(--font-display); font-style: italic; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0; }
 
-:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-sm); }
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--newsprint-2); }
+::-webkit-scrollbar-thumb { background: var(--black); border: 3px solid var(--newsprint-2); }
+
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 main:focus, [tabindex='-1']:focus { outline: none; }
 
 .skip-link {
   position: absolute; left: -9999px; top: 0; z-index: 100;
-  padding: var(--s-2) var(--s-4); background: var(--surface); color: var(--ink);
-  font-weight: 600; border: 2px solid var(--ink); border-radius: var(--radius-sm);
+  padding: var(--s-2) var(--s-4); background: var(--white); color: var(--ink);
+  font-weight: 600; border: var(--line);
 }
 .skip-link:focus { left: var(--s-4); top: var(--s-4); }
 

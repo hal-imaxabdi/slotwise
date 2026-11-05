@@ -23,7 +23,7 @@ function Base({ children, ...props }: IconProps) {
   );
 }
 
-// The logo, "the subtracted slot": a solid block with one booked slot taken out of it.
+// The logo: a sheared flyer tag with one slot cut out of it, the slot that sells once.
 export function BrandMark(props: IconProps) {
   return (
     <svg
@@ -35,7 +35,8 @@ export function BrandMark(props: IconProps) {
     >
       <path
         fill="currentColor"
-        d="M6 0h5v8a3 3 0 0 0 6 0V0h1a6 6 0 0 1 6 6v12a6 6 0 0 1-6 6H6a6 6 0 0 1-6-6V6a6 6 0 0 1 6-6Z"
+        fillRule="evenodd"
+        d="M6 2h18l-6 20H0L6 2Zm4.2 7.5-1.2 4h7l1.2-4h-7Z"
       />
     </svg>
   );
