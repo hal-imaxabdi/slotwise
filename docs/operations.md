@@ -37,7 +37,15 @@ With `DEMO_MODE=true` the staff and admin accounts get the public passwords in
 counter still applies) and cannot change their password or sign out other sessions.
 `reset_demo` deletes every non-demo user, so never enable demo mode with real customers.
 `reset_demo --if-demo-mode` does nothing when demo mode is off, so it can stay in a start
-command. Running the seed with demo mode off revokes the public staff/admin passwords.
+command.
+
+With demo mode off, login refuses the published staff/admin passwords straight away, even
+before anything is reseeded. Running the seed with demo mode off also replaces those
+password hashes and ends the sessions visitors opened with them.
+
+If the demo buttons answer "Invalid email or password", the database has not been seeded:
+check that `DEMO_MODE` is exactly `true` and that the start command includes the
+`reset_demo` step. Its log line reads `reset_demo: done (… users, … services, … appointments)`.
 
 ## Production settings (checked at startup)
 
