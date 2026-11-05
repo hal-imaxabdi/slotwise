@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app import throttle
 from app.config import settings
 from app.database import get_db
-from app.demo import is_demo_account
+from app.demo import is_demo_account, is_revoked_public_password
 from app.deps import get_current_session, get_now, require_csrf
 from app.models import User, UserSession
 from app.models.user import Role
@@ -118,6 +118,8 @@ def login(
         dummy_verify(body.password)
         _fail_login(db, keys, now, wait)
     if not verify_password(body.password, user.password_hash) or not user.is_active:
+        _fail_login(db, keys, now, wait)
+    if is_revoked_public_password(email, body.password):
         _fail_login(db, keys, now, wait)
 
     if needs_rehash(user.password_hash):
