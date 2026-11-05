@@ -14,7 +14,7 @@ import argparse
 import sys
 from datetime import datetime, timezone
 
-from sqlalchemy import delete, select, text, update
+from sqlalchemy import delete, func, select, text, update
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -55,6 +55,19 @@ def reset_demo(db: Session, now: datetime | None = None) -> None:
 
     seed(db, now=now, demo_mode=True)
 
+    db.flush()
+    found = set(db.scalars(select(User.email).where(User.email.in_(DEMO_EMAILS))))
+    if found != DEMO_EMAILS:
+        raise RuntimeError(f"demo accounts missing after reseed: {sorted(DEMO_EMAILS - found)}")
+
+
+def summary(db: Session) -> str:
+    def count(model) -> int:
+        return db.scalar(select(func.count()).select_from(model))
+
+    return (f"{count(User)} users, {count(Service)} services, "
+            f"{count(Appointment)} appointments")
+
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Wipe and reseed the Slotwise demo data.")
@@ -67,7 +80,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if not settings.demo_mode:
         if args.if_demo_mode:
-            print("reset_demo: DEMO_MODE is off, nothing to do")
+            print("reset_demo: DEMO_MODE is off, nothing to do "
+                  "(staff/admin demo logins are refused; set DEMO_MODE=true for the public demo)")
             return 0
         print("error: refusing to wipe data because DEMO_MODE is not true", file=sys.stderr)
         return 1
@@ -75,7 +89,7 @@ def main(argv: list[str] | None = None) -> int:
     with SessionLocal() as db:
         reset_demo(db, now=datetime.now(timezone.utc))
         db.commit()
-    print("reset_demo: done")
+        print(f"reset_demo: done ({summary(db)})")
     return 0
 
 
