@@ -15,8 +15,8 @@ export function SiteFooter() {
         </div>
         <nav aria-label="Product" className="site-footer__col">
           <h2>Product</h2>
-          <Link to="/#product">Features</Link>
-          <Link to="/#day">How it works</Link>
+          <Link to="/#features">Features</Link>
+          <Link to="/#demo">Live demo</Link>
         </nav>
         <nav aria-label="Company" className="site-footer__col">
           <h2>Company</h2>

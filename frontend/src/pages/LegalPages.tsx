@@ -27,7 +27,6 @@ function LegalLayout({
       <main id="main-content" className="legal">
         <article>
           <header className="legal__head">
-            <p className="eyebrow">Legal</p>
             <h1>{title}</h1>
             <p className="legal__intro">{intro}</p>
             <p className="legal__updated">Last updated: {LEGAL_UPDATED}</p>

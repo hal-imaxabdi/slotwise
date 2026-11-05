@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { useAuth } from '../auth/useAuth.ts';
-import { APP_NAME } from '../lib/site.ts';
+import { APP_NAME, GITHUB_URL } from '../lib/site.ts';
 import { DemoStartButton } from './DemoStartButton.tsx';
 import { BrandMark } from './icons.tsx';
 
@@ -16,8 +16,9 @@ export function PublicHeader({ onLanding = false }: { onLanding?: boolean }) {
           {APP_NAME}
         </Link>
         <nav aria-label="Site" className="site-nav">
-          <a href={`${base}#product`}>Product</a>
-          <a href={`${base}#day`}>How it works</a>
+          <a href={`${base}#features`}>Features</a>
+          <a href={`${base}#demo`}>Live demo</a>
+          <a href={GITHUB_URL}>GitHub</a>
         </nav>
         <div className="site-header__actions">
           {status === 'authenticated' ? (
