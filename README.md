@@ -37,15 +37,7 @@ booking is checked by the database itself, so two clients can never be given the
 
 ## Live demo
 
-The [live demo](https://slotwise-mocha.vercel.app) runs a fictional Jakarta barbershop. Select
 **Try the live demo** to sign in instantly; no account is needed.
-
-| Role | What you can do |
-|---|---|
-| **Client** | Browse services, book a time, then reschedule or cancel |
-| **Staff** | Manage the day's appointments, book walk-ins, record completed visits and no-shows |
-| **Owner** | Manage services, prices, opening hours and closures |
-
 <table>
   <tr>
     <td width="33%"><img src="docs/images/services.jpg" alt="Services"><br><sub><b>Services</b></sub></td>
@@ -85,8 +77,6 @@ npm install
 npm run dev
 ```
 
-The web app runs at `http://localhost:5173` and expects the API on port 8000.
-
 ## Project structure
 
 ```
@@ -95,7 +85,4 @@ frontend/   React web application and tests
 docs/       Design system, data model and operations notes
 ```
 
-## Acknowledgements
 
-Photography from [Pexels](https://www.pexels.com/license/) and [Unsplash](https://unsplash.com/license).
-The demo business and all people in it are fictional.
