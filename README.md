@@ -59,15 +59,6 @@ full week of bookings. One click signs you in; no account is needed.
 - **Secure by default.** Server-side sessions, CSRF tokens, origin checks, login throttling and argon2 password hashing.
 - **Accessible.** Keyboard support, visible focus, WCAG AA contrast and reduced-motion handling.
 
-## Tech stack
-
-| Layer | Tools |
-|---|---|
-| Frontend | React 19, TypeScript, Vite, React Router, Motion, three.js with React Three Fiber, plain CSS with design tokens |
-| Backend | FastAPI, SQLAlchemy, Alembic, PostgreSQL |
-| Testing | pytest, Vitest, Testing Library |
-| Hosting | Vercel (frontend), Render (API and database) |
-
 ## Project structure
 
 ```
