@@ -7,7 +7,7 @@
 **Online booking for barbershops, salons and studios.**<br>
 Fully booked. Never double-booked.
 
-[**Live demo**](https://slotwise-mocha.vercel.app) · [Report an issue](https://github.com/hal-imaxabdi/slotwise/issues)
+[**Live demo**](https://slotwise-mocha.vercel.app) 
 
 ![React](https://img.shields.io/badge/React_19-0b0b0b?style=flat-square&logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-0b0b0b?style=flat-square&logo=typescript&logoColor=3178C6)
